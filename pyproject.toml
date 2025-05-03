@@ -16,7 +16,7 @@ classifiers = [
 ]
 keywords = ["weather", "weather-api", "netherlands", "weather-forecast", "pollen", "belgium", "luxembourg", "rain-radar"]
 dependencies = [
-    "aiohttp>=3.11.13",
+    "aiohttp>=3.11.0",
     "async-timeout>=4.0.3",
     "svgwrite>=1.4.3",
 ]
