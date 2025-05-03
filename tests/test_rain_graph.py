@@ -335,3 +335,15 @@ async def test_download_many_clouds():
     for i in range(10):
         rain_graph._api_client.get_image.assert_any_call(f'image-url-{i}')
 
+def test_can_build_rain_graph_with_empty_sequence():
+
+    # RainGraph(
+    #     RadarAnimationData(sequence=None),
+    #     'en', 'style'
+    # )
+
+    RainGraph(
+        RadarAnimationData(sequence=[]),
+        'en', 'style'
+    )
+

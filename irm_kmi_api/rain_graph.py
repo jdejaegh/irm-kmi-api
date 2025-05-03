@@ -56,7 +56,8 @@ class RainGraph:
         self._bottom_text_y_pos: float = bottom_text_y_pos + self._background_size[1]
         self._api_client = api_client
 
-        self._frame_count: int = len(self._animation_data['sequence'])
+        self._sequence = self._animation_data['sequence'] if self._animation_data['sequence'] is not None else []
+        self._frame_count: int = max(len(self._sequence), 1)
         self._graph_width: float = self._svg_width - 2 * self._inset
         self._graph_bottom: float = self._top_text_space + self._graph_height
         self._svg_height: float = self._graph_height + self._top_text_space + self._bottom_text_space

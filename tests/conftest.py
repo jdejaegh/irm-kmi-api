@@ -1,4 +1,4 @@
-"""Fixtures for the IRM KMI integration tests."""
+"""Fixtures for the IRM KMI api package."""
 from __future__ import annotations
 
 import json
