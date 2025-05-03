@@ -10,10 +10,10 @@ from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY
 
 
 @freeze_time(datetime.fromisoformat('2023-12-26T17:30:00+00:00'))
-async def test_current_weather_be() -> None:
+def test_current_weather_be() -> None:
     api = get_api_with_data("forecast.json")
     tz = ZoneInfo("Europe/Brussels")
-    result = await api.get_current_weather(tz)
+    result = api.get_current_weather(tz)
 
     expected = CurrentWeatherData(
         condition=ATTR_CONDITION_CLOUDY,
@@ -29,10 +29,10 @@ async def test_current_weather_be() -> None:
 
 
 @freeze_time(datetime.fromisoformat("2023-12-28T15:30:00"))
-async def test_current_weather_nl() -> None:
+def test_current_weather_nl() -> None:
     api = get_api_with_data("forecast_nl.json")
     tz = ZoneInfo("Europe/Brussels")
-    result = await api.get_current_weather(tz)
+    result = api.get_current_weather(tz)
 
     expected = CurrentWeatherData(
         condition=ATTR_CONDITION_CLOUDY,
@@ -48,11 +48,11 @@ async def test_current_weather_nl() -> None:
 
 
 @freeze_time("2024-06-09T13:40:00+00:00")
-async def test_current_condition_forecast_nl() -> None:
+def test_current_condition_forecast_nl() -> None:
     api = get_api_with_data("forecast_ams_no_ww.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_current_weather(tz)
+    result = api.get_current_weather(tz)
 
     expected = CurrentWeatherData(
         condition=ATTR_CONDITION_PARTLYCLOUDY,
@@ -122,7 +122,7 @@ async def test_current_condition_forecast_nl() -> None:
                              ('pressure', 1010, 'midnight-bug-31-05-2024T00-13.json'),
                              ('pressure', 1010, 'no-midnight-bug-31-05-2024T01-55.json')
                          ])
-async def test_current_weather_attributes(
+def test_current_weather_attributes(
         sensor: str,
         expected: int | float | None,
         filename: str
@@ -133,10 +133,10 @@ async def test_current_weather_attributes(
     tz = ZoneInfo("Europe/Brussels")
 
     @freeze_time(datetime.fromisoformat(time) + timedelta(seconds=45, minutes=1))
-    async def run(sensor_: str, expected_: int | float | None):
+    def run(sensor_: str, expected_: int | float | None):
 
-        current_weather = await api.get_current_weather(tz)
+        current_weather = api.get_current_weather(tz)
         r = current_weather.get(sensor_, None)
         assert r == expected_
 
-    await run(sensor, expected)
+    run(sensor, expected)

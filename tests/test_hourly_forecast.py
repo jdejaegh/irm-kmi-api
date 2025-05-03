@@ -9,10 +9,10 @@ from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
 
 
 @freeze_time(datetime.fromisoformat('2023-12-26T18:30:00+01:00'))
-async def test_hourly_forecast() -> None:
+def test_hourly_forecast() -> None:
     api = get_api_with_data("forecast.json")
     tz = ZoneInfo("Europe/Brussels")
-    result = await api.get_hourly_forecast(tz)
+    result = api.get_hourly_forecast(tz)
 
     assert isinstance(result, list)
     assert len(result) == 49
@@ -35,11 +35,11 @@ async def test_hourly_forecast() -> None:
 
 
 @freeze_time(datetime.fromisoformat('2024-05-31T01:50:00+02:00'))
-async def test_hourly_forecast_bis() -> None:
+def test_hourly_forecast_bis() -> None:
     api = get_api_with_data("no-midnight-bug-31-05-2024T01-55.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_hourly_forecast(tz)
+    result = api.get_hourly_forecast(tz)
 
     assert isinstance(result, list)
 
@@ -53,12 +53,12 @@ async def test_hourly_forecast_bis() -> None:
 
 
 @freeze_time(datetime.fromisoformat('2024-05-31T00:10:00+02:00'))
-async def test_hourly_forecast_midnight_bug() -> None:
+def test_hourly_forecast_midnight_bug() -> None:
     # Related to https://github.com/jdejaegh/irm-kmi-ha/issues/38
     api = get_api_with_data("midnight-bug-31-05-2024T00-13.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_hourly_forecast(tz)
+    result = api.get_hourly_forecast(tz)
 
     assert isinstance(result, list)
 

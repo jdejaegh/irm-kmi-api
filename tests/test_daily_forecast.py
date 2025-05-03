@@ -13,7 +13,7 @@ async def test_daily_forecast() -> None:
     api = get_api_with_data("forecast.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_daily_forecast(tz, 'fr')
+    result = api.get_daily_forecast(tz, 'fr')
 
     assert isinstance(result, list)
     assert len(result) == 8
@@ -43,7 +43,7 @@ async def test_daily_forecast_midnight_bug() -> None:
     api = get_api_with_data("midnight-bug-31-05-2024T00-13.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_daily_forecast(tz, 'en')
+    result = api.get_daily_forecast(tz, 'en')
 
     assert result[0]['datetime'] == '2024-05-31'
     assert not result[0]['is_daytime']
@@ -63,7 +63,7 @@ async def test_datetime_daily_forecast_nl() -> None:
     api = get_api_with_data("forecast_ams_no_ww.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_daily_forecast(tz, 'en')
+    result = api.get_daily_forecast(tz, 'en')
 
     assert result[0]['datetime'] == '2024-06-09'
     assert result[0]['is_daytime']
@@ -80,7 +80,7 @@ async def test_sunrise_sunset_nl() -> None:
     api = get_api_with_data("forecast_ams_no_ww.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_daily_forecast(tz, 'en')
+    result = api.get_daily_forecast(tz, 'en')
 
     assert result[0]['sunrise'] == '2024-06-09T05:19:28+02:00'
     assert result[0]['sunset'] == '2024-06-09T22:01:09+02:00'
@@ -97,7 +97,7 @@ async def test_sunrise_sunset_be() -> None:
     api = get_api_with_data("forecast.json")
     tz = ZoneInfo("Europe/Brussels")
 
-    result = await api.get_daily_forecast(tz, 'en')
+    result = api.get_daily_forecast(tz, 'en')
 
     assert result[1]['sunrise'] == '2023-12-27T08:44:00+01:00'
     assert result[1]['sunset'] == '2023-12-27T16:43:00+01:00'

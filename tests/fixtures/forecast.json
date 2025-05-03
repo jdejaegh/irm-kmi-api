@@ -1401,7 +1401,7 @@
 				"time": "2023-12-26T17:30:00+01:00",
 				"uri": "https:\/\/app.meteo.be\/services\/appv4\/?s=getIncaImage&i=202312261640&f=2&k=4a71be18d6cb09f98c49c53f59902f8c&d=202312261720",
 				"value": 0,
-				"position": 0,
+				"position": 8,
 				"positionLower": 0,
 				"positionHigher": 0
 			},
@@ -1409,7 +1409,7 @@
 				"time": "2023-12-26T17:40:00+01:00",
 				"uri": "https:\/\/app.meteo.be\/services\/appv4\/?s=getIncaImage&i=202312261650&f=2&k=4a71be18d6cb09f98c49c53f59902f8c&d=202312261720",
 				"value": 0.1,
-				"position": 0,
+				"position": 4,
 				"positionLower": 0,
 				"positionHigher": 0
 			},
@@ -1417,7 +1417,7 @@
 				"time": "2023-12-26T17:50:00+01:00",
 				"uri": "https:\/\/app.meteo.be\/services\/appv4\/?s=getIncaImage&i=202312261700&f=2&k=4a71be18d6cb09f98c49c53f59902f8c&d=202312261720",
 				"value": 0.01,
-				"position": 0,
+				"position": 12,
 				"positionLower": 0,
 				"positionHigher": 0
 			},

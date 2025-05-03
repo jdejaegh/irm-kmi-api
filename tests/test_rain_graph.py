@@ -1,10 +1,16 @@
 import base64
 import datetime
+import json
 from datetime import datetime as dt
 from datetime import timedelta
+from unittest.mock import MagicMock, AsyncMock
+from zoneinfo import ZoneInfo
 
+from irm_kmi_api.api import IrmKmiApiClientHa
+from irm_kmi_api.const import OPTION_STYLE_SATELLITE
 from irm_kmi_api.data import AnimationFrameData, RadarAnimationData
 from irm_kmi_api.rain_graph import RainGraph
+from tests.conftest import load_fixture
 
 
 def get_radar_animation_data() -> RadarAnimationData:
@@ -38,8 +44,8 @@ async def test_svg_frame_setup():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     await rain_graph.draw_svg_frame()
@@ -58,8 +64,8 @@ def test_svg_hint():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.write_hint()
@@ -74,8 +80,8 @@ def test_svg_time_bars():
     rain_graph = RainGraph(
         tz = datetime.UTC,
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_hour_bars()
@@ -93,8 +99,8 @@ def test_draw_chances_path():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_chances_path()
@@ -111,8 +117,8 @@ def test_draw_data_line():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_data_line()
@@ -129,8 +135,8 @@ async def test_insert_background():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     await rain_graph.insert_background()
@@ -152,8 +158,8 @@ def test_draw_current_frame_line_moving():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_current_fame_line()
@@ -180,8 +186,8 @@ def test_draw_current_frame_line_index():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_current_fame_line(0)
@@ -209,8 +215,8 @@ def test_draw_description_text():
     rain_graph = RainGraph(
         tz=datetime.UTC,
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.draw_description_text()
@@ -236,8 +242,8 @@ def test_draw_cloud_layer():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     rain_graph.insert_cloud_layer()
@@ -256,8 +262,8 @@ async def test_draw_location_layer():
     data = get_radar_animation_data()
     rain_graph = RainGraph(
         animation_data=data,
-        background_image_path="irm_kmi_api/resources/be_white.png",
-        background_size=(640, 490),
+        country='BE',
+        style='STD',
     )
 
     await rain_graph.draw_location()
@@ -268,3 +274,64 @@ async def test_draw_location_layer():
         png_b64 = base64.b64encode(file.read()).decode('utf-8')
 
     assert png_b64 in str_svg
+
+
+def test_get_animation_data():
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+
+    tz = ZoneInfo('Europe/Brussels')
+    lang = 'en'
+    style = OPTION_STYLE_SATELLITE
+    dark_mode = False
+
+    api._api_data = json.loads(load_fixture("forecast.json"))
+
+    data = api.get_animation_data(tz, lang, style, dark_mode)
+    print(data)
+
+    assert list(map(lambda x: x.get('value'), data['sequence'])) == [0, 0, 0, 0, 0.1, 0.01, 0.12, 1.2, 2, 0, 0]
+    assert list(map(lambda x: x.get('position'), data['sequence'])) == [0, 0, 0, 8, 4, 12, 0, 0, 0, 0, 0]
+    assert list(map(lambda x: x.get('position_lower'), data['sequence'])) == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    assert list(map(lambda x: x.get('position_higher'), data['sequence'])) == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    for element in data['sequence']:
+        assert 'rs=4' in element['image']
+
+
+async def test_download_single_cloud():
+    data = get_radar_animation_data()
+    for i, item in enumerate(data['sequence']):
+        item['image'] = f'image-url-{i}'
+
+    rain_graph = RainGraph(
+        animation_data=data,
+        country='BE',
+        style='STD',
+    )
+
+    rain_graph._api_client = MagicMock()
+    rain_graph._api_client.get_image = AsyncMock()
+
+    await rain_graph.download_clouds(2)
+
+    rain_graph._api_client.get_image.assert_called_once_with('image-url-2')
+
+async def test_download_many_clouds():
+    data = get_radar_animation_data()
+    for i, item in enumerate(data['sequence']):
+        item['image'] = f'image-url-{i}'
+
+    rain_graph = RainGraph(
+        animation_data=data,
+        country='BE',
+        style='STD',
+    )
+
+    rain_graph._api_client = MagicMock()
+    rain_graph._api_client.get_image = AsyncMock()
+
+    await rain_graph.download_clouds()
+
+    for i in range(10):
+        rain_graph._api_client.get_image.assert_any_call(f'image-url-{i}')
+

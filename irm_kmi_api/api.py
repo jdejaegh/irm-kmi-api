@@ -15,7 +15,7 @@ import aiohttp
 import async_timeout
 
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
-from .const import OPTION_STYLE_SATELLITE, STYLE_TO_PARAM_MAP, WEEKDAYS
+from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
                    IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
                    WarningData)
@@ -154,11 +154,11 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
     def get_country(self) -> str | None:
         return self._api_data.get('country', None)
 
-    async def get_current_weather(self, tz: ZoneInfo) -> CurrentWeatherData:
+    def get_current_weather(self, tz: ZoneInfo) -> CurrentWeatherData:
         """Parse the API data to build a CurrentWeatherData."""
 
-        now_hourly = await self._get_now_hourly(tz)
-        uv_index = await self._get_uv_index()
+        now_hourly = self._get_now_hourly(tz)
+        uv_index = self._get_uv_index()
 
         try:
             pressure = float(now_hourly.get('pressure', None)) if now_hourly is not None else None
@@ -222,7 +222,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return current_weather
 
-    async def _get_uv_index(self) -> float | None:
+    def _get_uv_index(self) -> float | None:
         uv_index = None
         module_data = self._api_data.get('module', None)
         if not (module_data is None or not isinstance(module_data, list)):
@@ -231,7 +231,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                     uv_index = module.get('data', {}).get('levelValue')
         return uv_index
 
-    async def _get_now_hourly(self, tz: ZoneInfo) -> dict | None:
+    def _get_now_hourly(self, tz: ZoneInfo) -> dict | None:
         now_hourly = None
         hourly_forecast_data = self._api_data.get('for', {}).get('hourly')
         now = datetime.now(tz)
@@ -245,11 +245,11 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                     break
         return now_hourly
 
-    async def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast] | None:
+    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast]:
         """Parse data from the API to create a list of daily forecasts"""
         data = self._api_data.get('for', {}).get('daily')
         if data is None or not isinstance(data, list) or len(data) == 0:
-            return None
+            return []
 
         forecasts = list()
         forecast_day = datetime.now(tz)
@@ -337,12 +337,12 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    async def get_hourly_forecast(self, tz: ZoneInfo) -> List[Forecast] | None:
+    def get_hourly_forecast(self, tz: ZoneInfo) -> List[Forecast]:
         """Parse data from the API to create a list of hourly forecasts"""
         data = self._api_data.get('for', {}).get('hourly')
 
         if data is None or not isinstance(data, list) or len(data) == 0:
-            return None
+            return []
 
         forecasts = list()
         day = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -389,12 +389,12 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_radar_forecast(self) -> List[IrmKmiRadarForecast] | None:
+    def get_radar_forecast(self) -> List[IrmKmiRadarForecast]:
         """Create a list of short term forecasts for rain based on the data provided by the rain radar"""
         data = self._api_data.get('animation', {})
 
-        if data is None:
-            return None
+        if not isinstance(data, dict):
+            return []
         sequence = data.get("sequence", [])
         unit = data.get("unit", {}).get("en", None)
         ratios = [f['value'] / f['position'] for f in sequence if f['position'] > 0]
@@ -418,8 +418,12 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             )
         return forecast
 
-    async def get_animation_data(self, tz: ZoneInfo, lang: str, style: str, dark_mode: bool) -> (RadarAnimationData,
-                                                                                                 str, Tuple[int, int]):
+    def get_animation_data(self,
+                           tz: ZoneInfo,
+                           lang: str,
+                           style: str,
+                           dark_mode: bool
+                           ) -> RadarAnimationData:
         """From the API data passed in, call the API to get all the images and create the radar animation data object.
         Frames from the API are merged with the background map and the location marker to create each frame."""
         animation_data = self._api_data.get('animation', {}).get('sequence')
@@ -441,16 +445,29 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             location=localisation
         )
 
-        r = self._get_rain_graph_data(
-            radar_animation,
-            animation_data,
-            country,
-            images_from_api,
-            tz,
-            style,
-            dark_mode)
+        sequence: List[AnimationFrameData] = list()
 
-        return r
+        current_time = datetime.now(tz)
+        most_recent_frame = None
+
+        for idx, item in enumerate(animation_data):
+            frame = AnimationFrameData(
+                image=images_from_api[idx],
+                time=datetime.fromisoformat(item.get('time')) if item.get('time', None) is not None else None,
+                value=item.get('value', 0),
+                position=item.get('position', 0),
+                position_lower=item.get('positionLower', 0),
+                position_higher=item.get('positionHigher', 0)
+            )
+            sequence.append(frame)
+
+            if most_recent_frame is None and current_time < frame['time']:
+                most_recent_frame = idx - 1 if idx > 0 else idx
+
+        radar_animation['sequence'] = sequence
+        radar_animation['most_recent_image_idx'] = most_recent_frame
+
+        return radar_animation
 
     def get_warnings(self, lang: str) -> List[WarningData]:
         """Create a list of warning data instances based on the api data"""
@@ -518,46 +535,3 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         new_url = parsed_url._replace(query=new_query)
         return str(urllib.parse.urlunparse(new_url))
 
-    @staticmethod
-    def _get_rain_graph_data(radar_animation: RadarAnimationData,
-                             api_animation_data: List[dict],
-                             country: str | None,
-                             images_from_api: list[str],
-                             tz: ZoneInfo,
-                             style: str,
-                             dark_mode: bool
-                             ) -> (RadarAnimationData, str, Tuple[int, int]):
-        """Create a RainGraph object that is ready to output animated and still SVG images"""
-        sequence: List[AnimationFrameData] = list()
-
-        current_time = datetime.now(tz)
-        most_recent_frame = None
-
-        for idx, item in enumerate(api_animation_data):
-            frame = AnimationFrameData(
-                image=images_from_api[idx],
-                time=datetime.fromisoformat(item.get('time')) if item.get('time', None) is not None else None,
-                value=item.get('value', 0),
-                position=item.get('position', 0),
-                position_lower=item.get('positionLower', 0),
-                position_higher=item.get('positionHigher', 0)
-            )
-            sequence.append(frame)
-
-            if most_recent_frame is None and current_time < frame['time']:
-                most_recent_frame = idx - 1 if idx > 0 else idx
-
-        radar_animation['sequence'] = sequence
-        radar_animation['most_recent_image_idx'] = most_recent_frame
-
-        satellite_mode = style == OPTION_STYLE_SATELLITE
-
-        if country == 'NL':
-            image_path = "custom_components/irm_kmi/resources/nl.png"
-            bg_size = (640, 600)
-        else:
-            image_path = (f"custom_components/irm_kmi/resources/be_"
-                          f"{'satellite' if satellite_mode else 'black' if dark_mode else 'white'}.png")
-            bg_size = (640, 490)
-
-        return radar_animation, image_path, bg_size
