@@ -14,10 +14,11 @@ from zoneinfo import ZoneInfo
 import aiohttp
 import async_timeout
 
-from .const import WEEKDAYS, STYLE_TO_PARAM_MAP, OPTION_STYLE_SATELLITE, \
-    MAP_WARNING_ID_TO_SLUG as SLUG_MAP
-from .data import CurrentWeatherData, IrmKmiForecast, Forecast, \
-    IrmKmiRadarForecast, RadarAnimationData, AnimationFrameData, WarningData
+from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
+from .const import OPTION_STYLE_SATELLITE, STYLE_TO_PARAM_MAP, WEEKDAYS
+from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
+                   IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
+                   WarningData)
 from .pollen import PollenParser
 from .utils import next_weekday
 

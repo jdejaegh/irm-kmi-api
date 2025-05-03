@@ -3,12 +3,11 @@ from zoneinfo import ZoneInfo
 
 from freezegun import freeze_time
 
-from irm_kmi_api.data import CurrentWeatherData, IrmKmiRadarForecast, Forecast, IrmKmiForecast
+from irm_kmi_api.data import (CurrentWeatherData, Forecast, IrmKmiForecast,
+                              IrmKmiRadarForecast)
 from tests.conftest import get_api_with_data
-from tests.const import ATTR_CONDITION_PARTLYCLOUDY, ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
-
-pytest_plugins = ('pytest_asyncio',)
-
+from tests.const import (ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY,
+                         ATTR_CONDITION_RAINY)
 
 
 @freeze_time(datetime.fromisoformat('2024-01-12T07:10:00+00:00'))

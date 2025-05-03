@@ -4,7 +4,7 @@ import base64
 import copy
 import datetime
 import logging
-from typing import List, Self, Any
+from typing import Any, List, Self
 
 import async_timeout
 from svgwrite import Drawing

@@ -1,6 +1,7 @@
 import base64
 import datetime
-from datetime import datetime as dt, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
 
 from irm_kmi_api.data import AnimationFrameData, RadarAnimationData
 from irm_kmi_api.rain_graph import RainGraph

@@ -1,6 +1,6 @@
 """Data classes for IRM KMI integration"""
 from datetime import datetime
-from typing import TypedDict, Required, List
+from typing import List, Required, TypedDict
 
 
 class Forecast(TypedDict, total=False):
