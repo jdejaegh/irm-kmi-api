@@ -11,7 +11,7 @@ from svgwrite import Drawing
 from svgwrite.animate import Animate
 from svgwrite.container import FONT_TEMPLATE
 
-from .api import IrmKmiApiClient
+from .api import IrmKmiApiClient, IrmKmiApiError
 from .const import OPTION_STYLE_SATELLITE
 from .data import AnimationFrameData, RadarAnimationData
 from .resources import be_black, be_satellite, be_white, nl, roboto
@@ -96,8 +96,11 @@ class RainGraph:
             self._dwg = copy.deepcopy(self._dwg_save)
             self.draw_current_fame_line()
             self.draw_description_text()
-            await clouds
-            self.insert_cloud_layer()
+            try:
+                await clouds
+                self.insert_cloud_layer()
+            except IrmKmiApiError as err:
+                _LOGGER.warning(f"Could not download clouds from API: {err}")
             await self.draw_location()
             self._dwg_animated = self._dwg
         return self.get_svg_string(still_image=False)
@@ -112,8 +115,11 @@ class RainGraph:
             self._dwg = copy.deepcopy(self._dwg_save)
             self.draw_current_fame_line(idx)
             self.draw_description_text(idx)
-            await cloud
-            self.insert_cloud_layer(idx)
+            try:
+                await cloud
+                self.insert_cloud_layer(idx)
+            except IrmKmiApiError as err:
+                _LOGGER.warning(f"Could not download clouds from API: {err}")
             await self.draw_location()
             self._dwg_still = self._dwg
         return self.get_svg_string(still_image=True)
