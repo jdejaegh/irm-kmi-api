@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from freezegun import freeze_time
 
-from irm_kmi_api.data import IrmKmiForecast
+from irm_kmi_api.data import IrmKmiForecast, IrmKmiConditionEvol
 from tests.conftest import get_api_with_data
 from tests.const import ATTR_CONDITION_PARTLYCLOUDY
 
@@ -22,6 +22,8 @@ async def test_daily_forecast() -> None:
     expected = IrmKmiForecast(
         datetime='2023-12-27',
         condition=ATTR_CONDITION_PARTLYCLOUDY,
+        condition_2=None,
+        condition_evol=IrmKmiConditionEvol.TWO_WAYS,
         native_precipitation=0,
         native_temperature=9,
         native_templow=4,

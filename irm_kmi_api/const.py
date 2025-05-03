@@ -1,5 +1,7 @@
 from typing import Final
 
+from irm_kmi_api.data import IrmKmiConditionEvol
+
 POLLEN_NAMES: Final = {'Alder', 'Ash', 'Birch', 'Grasses', 'Hazel', 'Mugwort', 'Oak'}
 POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange', 'high': 'red', 'very high': 'purple',
                          'active': 'active'}
@@ -26,3 +28,9 @@ MAP_WARNING_ID_TO_SLUG: Final = {
     14: 'thunderstorm_large_rainfall',
     15: 'storm_surge',
     17: 'coldspell'}
+
+WWEVOL_TO_ENUM_MAP: Final = {
+    None: IrmKmiConditionEvol.STABLE,
+    0: IrmKmiConditionEvol.ONE_WAY,
+    1: IrmKmiConditionEvol.TWO_WAYS
+}

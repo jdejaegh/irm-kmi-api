@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 import aiohttp
 import async_timeout
 
-from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
+from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
                    IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
@@ -314,6 +314,8 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             forecast = IrmKmiForecast(
                 datetime=(forecast_day.strftime('%Y-%m-%d')),
                 condition=self._cdt_map.get((f.get('ww1', None), f.get('dayNight', None)), None),
+                condition_2=self._cdt_map.get((f.get('ww2', None), f.get('dayNight', None)), None),
+                condition_evol=WWEVOL_TO_ENUM_MAP.get(f.get('wwevol'), None),
                 native_precipitation=precipitation,
                 native_temperature=f.get('tempMax', None),
                 native_templow=f.get('tempMin', None),

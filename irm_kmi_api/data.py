@@ -1,5 +1,6 @@
 """Data classes for IRM KMI integration"""
 from datetime import datetime
+from enum import Enum
 from typing import List, Required, TypedDict
 
 
@@ -35,10 +36,16 @@ class Forecast(TypedDict, total=False):
     is_daytime: bool | None  # Mandatory to use with forecast_twice_daily
 
 
-class IrmKmiForecast(Forecast):
+class IrmKmiConditionEvol(Enum):
+    ONE_WAY = 'one_way'
+    TWO_WAYS = 'two_ways'
+    STABLE = 'stable'
+
+class IrmKmiForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
 
-    # TODO: add condition_2 as well and evolution to match data from the API?
+    condition_2: str | None
+    condition_evol: IrmKmiConditionEvol | None
     text: str | None
     sunrise: str | None
     sunset: str | None
