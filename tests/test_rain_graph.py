@@ -337,10 +337,10 @@ async def test_download_many_clouds():
 
 def test_can_build_rain_graph_with_empty_sequence():
 
-    # RainGraph(
-    #     RadarAnimationData(sequence=None),
-    #     'en', 'style'
-    # )
+    RainGraph(
+        RadarAnimationData(sequence=None),
+        'en', 'style'
+    )
 
     RainGraph(
         RadarAnimationData(sequence=[]),
