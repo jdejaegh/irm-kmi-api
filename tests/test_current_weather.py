@@ -4,7 +4,66 @@ from zoneinfo import ZoneInfo
 import pytest
 from freezegun import freeze_time
 
+from irm_kmi_api.data import CurrentWeatherData
 from tests.conftest import get_api_data, get_api_with_data
+from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY
+
+
+@freeze_time(datetime.fromisoformat('2023-12-26T17:30:00+00:00'))
+async def test_current_weather_be() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+    result = await api.get_current_weather(tz)
+
+    expected = CurrentWeatherData(
+        condition=ATTR_CONDITION_CLOUDY,
+        temperature=7,
+        wind_speed=5,
+        wind_gust_speed=None,
+        wind_bearing=248,
+        pressure=1020,
+        uv_index=.7
+    )
+
+    assert result == expected
+
+
+@freeze_time(datetime.fromisoformat("2023-12-28T15:30:00"))
+async def test_current_weather_nl() -> None:
+    api = get_api_with_data("forecast_nl.json")
+    tz = ZoneInfo("Europe/Brussels")
+    result = await api.get_current_weather(tz)
+
+    expected = CurrentWeatherData(
+        condition=ATTR_CONDITION_CLOUDY,
+        temperature=11,
+        wind_speed=40,
+        wind_gust_speed=None,
+        wind_bearing=225,
+        pressure=1008,
+        uv_index=1
+    )
+
+    assert expected == result
+
+
+@freeze_time("2024-06-09T13:40:00+00:00")
+async def test_current_condition_forecast_nl() -> None:
+    api = get_api_with_data("forecast_ams_no_ww.json")
+    tz = ZoneInfo("Europe/Brussels")
+
+    result = await api.get_current_weather(tz)
+
+    expected = CurrentWeatherData(
+        condition=ATTR_CONDITION_PARTLYCLOUDY,
+        temperature=15,
+        wind_speed=26,
+        wind_gust_speed=None,
+        wind_bearing=270,
+        pressure=1010,
+        uv_index=6
+    )
+    assert result == expected
 
 
 @pytest.mark.parametrize("sensor,expected,filename",
@@ -63,7 +122,7 @@ from tests.conftest import get_api_data, get_api_with_data
                              ('pressure', 1010, 'midnight-bug-31-05-2024T00-13.json'),
                              ('pressure', 1010, 'no-midnight-bug-31-05-2024T01-55.json')
                          ])
-async def test_current_weather_sensors(
+async def test_current_weather_attributes(
         sensor: str,
         expected: int | float | None,
         filename: str
@@ -81,21 +140,3 @@ async def test_current_weather_sensors(
         assert r == expected_
 
     await run(sensor, expected)
-
-
-@pytest.mark.parametrize("expected,filename",
-                         [
-                             ('mm/h', 'forecast_ams_no_ww.json'),
-                             ('mm/10min', 'forecast_out_of_benelux.json'),
-                             ('mm/10min', 'forecast_with_rain_on_radar.json'),
-                         ])
-async def test_current_rainfall_unit(
-        expected,
-        filename
-) -> None:
-    api = get_api_with_data(filename)
-
-    radar_forecast=api.get_radar_forecast()
-
-    for r in radar_forecast:
-        assert r.get('unit') == expected
