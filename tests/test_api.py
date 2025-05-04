@@ -69,9 +69,9 @@ async def test_get_image_api_called() -> None:
 
 def test_expire_cache_clears_items() -> None:
     api = IrmKmiApiClient(session=MagicMock(), user_agent="test-user-agent")
-    assert api.cache_max_age == 60 * 60 * 2
+    assert api._cache_max_age == 60 * 60 * 2
 
-    api.cache = {
+    api._cache = {
         'first-url': {
             'timestamp': time.time() - timedelta(hours=3).seconds,
             'response': 'wowo',
@@ -84,12 +84,12 @@ def test_expire_cache_clears_items() -> None:
         }
     }
 
-    assert len(api.cache) == 2
+    assert len(api._cache) == 2
 
     api.expire_cache()
 
-    assert len(api.cache) == 1
-    assert 'second-url' in api.cache
+    assert len(api._cache) == 1
+    assert 'second-url' in api._cache
 
 
 async def test_api_wrapper_puts_response_in_cache() -> None:
@@ -107,8 +107,8 @@ async def test_api_wrapper_puts_response_in_cache() -> None:
     r = await api._api_wrapper(params={}, base_url='test-url')
 
     assert r == b"response value"
-    assert len(api.cache) == 1
-    assert 'test-url' in api.cache
+    assert len(api._cache) == 1
+    assert 'test-url' in api._cache
 
     session.request.assert_awaited_once_with(
         method='get', url='test-url', headers={'User-Agent': 'test-user-agent'}, json=None, params={}
@@ -126,7 +126,7 @@ async def test_api_wrapper_gets_response_from_cache() -> None:
     session.request = AsyncMock(return_value=response)
 
     api = IrmKmiApiClient(session=session, user_agent="test-user-agent")
-    api.cache = {
+    api._cache = {
         'test-url': {
             'timestamp': time.time(),
             'response': b"response value",
@@ -137,8 +137,8 @@ async def test_api_wrapper_gets_response_from_cache() -> None:
     r = await api._api_wrapper(params={}, base_url='test-url')
 
     assert r == b"response value"
-    assert len(api.cache) == 1
-    assert 'test-url' in api.cache
+    assert len(api._cache) == 1
+    assert 'test-url' in api._cache
 
     session.request.assert_awaited_once_with(
         method='get',
