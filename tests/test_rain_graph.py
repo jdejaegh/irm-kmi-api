@@ -48,9 +48,9 @@ async def test_svg_frame_setup():
         style='STD',
     )
 
-    await rain_graph.draw_svg_frame()
+    await rain_graph._draw_svg_frame()
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     with open("irm_kmi_api/resources/roboto_medium.ttf", "rb") as file:
         font_b64 = base64.b64encode(file.read()).decode('utf-8')
@@ -68,9 +68,9 @@ def test_svg_hint():
         style='STD',
     )
 
-    rain_graph.write_hint()
+    rain_graph._write_hint()
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     assert "Testing SVG camera" in svg_str
 
@@ -84,9 +84,9 @@ def test_svg_time_bars():
         style='STD',
     )
 
-    rain_graph.draw_hour_bars()
+    rain_graph._draw_hour_bars()
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     assert "19h" in svg_str
     assert "20h" in svg_str
@@ -103,9 +103,9 @@ def test_draw_chances_path():
         style='STD',
     )
 
-    rain_graph.draw_chances_path()
+    rain_graph._draw_chances_path()
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     assert 'fill="#63c8fa"' in svg_str
     assert 'opacity="0.3"' in svg_str
@@ -121,9 +121,9 @@ def test_draw_data_line():
         style='STD',
     )
 
-    rain_graph.draw_data_line()
+    rain_graph._draw_data_line()
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     assert 'fill="none"' in svg_str
     assert 'stroke-width="2"' in svg_str
@@ -139,12 +139,12 @@ async def test_insert_background():
         style='STD',
     )
 
-    await rain_graph.insert_background()
+    await rain_graph._insert_background()
 
     with open("irm_kmi_api/resources/be_white.png", "rb") as file:
         png_b64 = base64.b64encode(file.read()).decode('utf-8')
 
-    svg_str = rain_graph.get_dwg().tostring()
+    svg_str = rain_graph._get_dwg().tostring()
 
     assert png_b64 in svg_str
     assert "<image " in svg_str
@@ -162,9 +162,9 @@ def test_draw_current_frame_line_moving():
         style='STD',
     )
 
-    rain_graph.draw_current_fame_line()
+    rain_graph._draw_current_fame_line()
 
-    str_svg = rain_graph.get_dwg().tostring()
+    str_svg = rain_graph._get_dwg().tostring()
 
     assert '<line' in str_svg
     assert 'id="now"' in str_svg
@@ -190,9 +190,9 @@ def test_draw_current_frame_line_index():
         style='STD',
     )
 
-    rain_graph.draw_current_fame_line(0)
+    rain_graph._draw_current_fame_line(0)
 
-    str_svg = rain_graph.get_dwg().tostring()
+    str_svg = rain_graph._get_dwg().tostring()
 
     assert '<line' in str_svg
     assert 'id="now"' in str_svg
@@ -219,9 +219,9 @@ def test_draw_description_text():
         style='STD',
     )
 
-    rain_graph.draw_description_text()
+    rain_graph._draw_description_text()
 
-    str_svg = rain_graph.get_dwg().tostring()
+    str_svg = rain_graph._get_dwg().tostring()
 
     assert "18:30" in str_svg
     assert "18:40" in str_svg
@@ -246,9 +246,9 @@ def test_draw_cloud_layer():
         style='STD',
     )
 
-    rain_graph.insert_cloud_layer()
+    rain_graph._insert_cloud_layer()
 
-    str_svg = rain_graph.get_dwg().tostring()
+    str_svg = rain_graph._get_dwg().tostring()
 
     with open("tests/fixtures/clouds_be.png", "rb") as file:
         png_b64 = base64.b64encode(file.read()).decode('utf-8')
@@ -266,9 +266,9 @@ async def test_draw_location_layer():
         style='STD',
     )
 
-    await rain_graph.draw_location()
+    await rain_graph._draw_location()
 
-    str_svg = rain_graph.get_dwg().tostring()
+    str_svg = rain_graph._get_dwg().tostring()
 
     with open("tests/fixtures/loc_layer_be_n.png", "rb") as file:
         png_b64 = base64.b64encode(file.read()).decode('utf-8')
@@ -312,7 +312,7 @@ async def test_download_single_cloud():
     rain_graph._api_client = MagicMock()
     rain_graph._api_client.get_image = AsyncMock()
 
-    await rain_graph.download_clouds(2)
+    await rain_graph._download_clouds(2)
 
     rain_graph._api_client.get_image.assert_called_once_with('image-url-2')
 
@@ -330,7 +330,7 @@ async def test_download_many_clouds():
     rain_graph._api_client = MagicMock()
     rain_graph._api_client.get_image = AsyncMock()
 
-    await rain_graph.download_clouds()
+    await rain_graph._download_clouds()
 
     for i in range(10):
         rain_graph._api_client.get_image.assert_any_call(f'image-url-{i}')

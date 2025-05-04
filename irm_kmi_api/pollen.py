@@ -21,39 +21,13 @@ class PollenParser:
     ):
         self._xml = xml_string
 
-    @staticmethod
-    def get_default_data() -> dict:
-        """Return all the known pollen with 'none' value"""
-        return {k.lower(): 'none' for k in POLLEN_NAMES}
-
-    @staticmethod
-    def get_unavailable_data() -> dict:
-        """Return all the known pollen with 'none' value"""
-        return {k.lower(): None for k in POLLEN_NAMES}
-
-    @staticmethod
-    def get_option_values() -> List[str]:
-        """List all the values that the pollen can have"""
-        return list(POLLEN_LEVEL_TO_COLOR.values()) + ['none']
-
-    @staticmethod
-    def _extract_elements(root) -> List[ET.Element]:
-        """Recursively collect all elements of the SVG in a list"""
-        elements = []
-        for child in root:
-            elements.append(child)
-            elements.extend(PollenParser._extract_elements(child))
-        return elements
-
-    @staticmethod
-    def _get_elem_text(e) -> str | None:
-        if e.text is not None:
-            return e.text.strip()
-        return None
-
     def get_pollen_data(self) -> dict:
-        """From the XML string, parse the SVG and extract the pollen data from the image.
-        If an error occurs, return the default value"""
+        """
+        Parse the SVG and extract the pollen data from the image.
+        If an error occurs, return the default value.
+
+        :return: pollen dict
+        """
         pollen_data = self.get_default_data()
         try:
             _LOGGER.debug(f"Full SVG: {self._xml}")
@@ -106,3 +80,34 @@ class PollenParser:
 
         _LOGGER.debug(f"Pollen data: {pollen_data}")
         return pollen_data
+
+    @staticmethod
+    def get_default_data() -> dict:
+        """Return all the known pollen with 'none' value"""
+        return {k.lower(): 'none' for k in POLLEN_NAMES}
+
+    @staticmethod
+    def get_unavailable_data() -> dict:
+        """Return all the known pollen with None value"""
+        return {k.lower(): None for k in POLLEN_NAMES}
+
+    @staticmethod
+    def get_option_values() -> List[str]:
+        """List all the values that the pollen can have"""
+        return list(POLLEN_LEVEL_TO_COLOR.values()) + ['none']
+
+    @staticmethod
+    def _extract_elements(root) -> List[ET.Element]:
+        """Recursively collect all elements of the SVG in a list"""
+        elements = []
+        for child in root:
+            elements.append(child)
+            elements.extend(PollenParser._extract_elements(child))
+        return elements
+
+    @staticmethod
+    def _get_elem_text(e) -> str | None:
+        if e.text is not None:
+            return e.text.strip()
+        return None
+

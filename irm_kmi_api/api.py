@@ -20,7 +20,6 @@ from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
                    IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
                    WarningData)
 from .pollen import PollenParser
-from .utils import next_weekday
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +34,6 @@ class IrmKmiApiCommunicationError(IrmKmiApiError):
 
 class IrmKmiApiParametersError(IrmKmiApiError):
     """Exception to indicate a parameter error."""
-
 
 
 class IrmKmiApiClient:
@@ -95,6 +93,20 @@ class IrmKmiApiClient:
         r: bytes = await self._api_wrapper(base_url=url, params={} if params is None else params)
         return r.decode()
 
+    def expire_cache(self) -> None:
+        """
+        Expire items from the cache which have not been accessed since self._cache_max_age (default 2h).
+        Must be called regularly to clear the cache.
+        """
+        now = time.time()
+        keys_to_delete = set()
+        for key, value in self._cache.items():
+            if now - value['timestamp'] > self._cache_max_age:
+                keys_to_delete.add(key)
+        for key in keys_to_delete:
+            del self._cache[key]
+        _LOGGER.info(f"Expired {len(keys_to_delete)} elements from API cache")
+
     async def _api_wrapper(
             self,
             params: dict,
@@ -151,20 +163,6 @@ class IrmKmiApiClient:
         """Get API key."""
         return hashlib.md5(f"r9EnW374jkJ9acc;{method_name};{datetime.now().strftime('%d/%m/%Y')}".encode()).hexdigest()
 
-    def expire_cache(self) -> None:
-        """
-        Expire items from the cache which have not been accessed since self._cache_max_age (default 2h).
-        Must be called regularly to clear the cache.
-        """
-        now = time.time()
-        keys_to_delete = set()
-        for key, value in self._cache.items():
-            if now - value['timestamp'] > self._cache_max_age:
-                keys_to_delete.add(key)
-        for key in keys_to_delete:
-            del self._cache[key]
-        _LOGGER.info(f"Expired {len(keys_to_delete)} elements from API cache")
-
 
 class IrmKmiApiClientHa(IrmKmiApiClient):
     """API client for IRM KMI weather data with additional methods to integrate easily with Home Assistant"""
@@ -182,22 +180,6 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         :raise: IrmKmiApiError when communication with the API fails
         """
         self._api_data = await self.get_forecasts_coord(coord)
-
-    def get_city(self) -> str | None:
-        """
-        Get the city for which we currently have the forecast
-
-        :return: city name as str or None if unavailable
-        """
-        return self._api_data.get('cityName', None)
-
-    def get_country(self) -> str | None:
-        """
-        Get the two-letters country code for which we currently have the forecast
-
-        :return: country code as str or None if unavailable
-        """
-        return self._api_data.get('country', None)
 
     def get_current_weather(self, tz: ZoneInfo) -> CurrentWeatherData:
         """
@@ -272,128 +254,38 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return current_weather
 
-    def _get_uv_index(self) -> float | None:
-        uv_index = None
-        module_data = self._api_data.get('module', None)
-        if not (module_data is None or not isinstance(module_data, list)):
-            for module in module_data:
-                if module.get('type', None) == 'uv':
-                    uv_index = module.get('data', {}).get('levelValue')
-        return uv_index
-
-    def _get_now_hourly(self, tz: ZoneInfo) -> dict | None:
-        now_hourly = None
-        hourly_forecast_data = self._api_data.get('for', {}).get('hourly')
-        now = datetime.now(tz)
-        if not (hourly_forecast_data is None
-                or not isinstance(hourly_forecast_data, list)
-                or len(hourly_forecast_data) == 0):
-
-            for current in hourly_forecast_data[:4]:
-                if now.strftime('%H') == current['hour']:
-                    now_hourly = current
-                    break
-        return now_hourly
-
-    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast]:
+    def get_radar_forecast(self) -> List[IrmKmiRadarForecast]:
         """
-        Parse the API data we currently have to build the daily forecast list.
+        Create a list of short term forecasts for rain based on the data provided by the rain radar
 
-        :param tz: time zone to use to interpret the timestamps in the forecast (generally is Europe/Brussels)
-        :param lang: langage to get data for (must be 'fr', 'nl', 'de' or 'en')
-        :return: chronologically ordered list of daily forecasts
+        :return: chronologically ordered list of 'few'-minutes radar forecasts
         """
-        data = self._api_data.get('for', {}).get('daily')
-        if data is None or not isinstance(data, list) or len(data) == 0:
+        data = self._api_data.get('animation', {})
+
+        if not isinstance(data, dict):
             return []
+        sequence = data.get("sequence", [])
+        unit = data.get("unit", {}).get("en", None)
+        ratios = [f['value'] / f['position'] for f in sequence if f['position'] > 0]
 
-        forecasts = list()
-        forecast_day = datetime.now(tz)
+        if len(ratios) > 0:
+            ratio = mean(ratios)
+        else:
+            ratio = 0
 
-        for (idx, f) in enumerate(data):
-            precipitation = None
-            if f.get('precipQuantity', None) is not None:
-                try:
-                    precipitation = float(f.get('precipQuantity'))
-                except (TypeError, ValueError):
-                    pass
-
-            native_wind_gust_speed = None
-            if f.get('wind', {}).get('peakSpeed') is not None:
-                try:
-                    native_wind_gust_speed = int(f.get('wind', {}).get('peakSpeed'))
-                except (TypeError, ValueError):
-                    pass
-
-            wind_bearing = None
-            if f.get('wind', {}).get('dirText', {}).get('en') != 'VAR':
-                try:
-                    wind_bearing = (float(f.get('wind', {}).get('dir')) + 180) % 360
-                except (TypeError, ValueError):
-                    pass
-
-            is_daytime = f.get('dayNight', None) == 'd'
-
-            day_name = f.get('dayName', {}).get('en', None)
-            timestamp = f.get('timestamp', None)
-            if timestamp is not None:
-                forecast_day = datetime.fromisoformat(timestamp)
-            elif day_name in WEEKDAYS:
-                forecast_day = next_weekday(forecast_day, WEEKDAYS.index(day_name))
-            elif day_name in ['Today', 'Tonight']:
-                forecast_day = datetime.now(tz)
-            elif day_name == 'Tomorrow':
-                forecast_day = datetime.now(tz) + timedelta(days=1)
-
-            sunrise_sec = f.get('dawnRiseSeconds', None)
-            if sunrise_sec is None:
-                sunrise_sec = f.get('sunRise', None)
-            sunrise = None
-            if sunrise_sec is not None:
-                try:
-                    sunrise = (forecast_day.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
-                               + timedelta(seconds=float(sunrise_sec)))
-                except (TypeError, ValueError):
-                    pass
-
-            sunset_sec = f.get('dawnSetSeconds', None)
-            if sunset_sec is None:
-                sunset_sec = f.get('sunSet', None)
-            sunset = None
-            if sunset_sec is not None:
-                try:
-                    sunset = (forecast_day.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
-                              + timedelta(seconds=float(sunset_sec)))
-                except (TypeError, ValueError):
-                    pass
-
-            forecast = IrmKmiForecast(
-                datetime=(forecast_day.strftime('%Y-%m-%d')),
-                condition=self._cdt_map.get((f.get('ww1', None), f.get('dayNight', None)), None),
-                condition_2=self._cdt_map.get((f.get('ww2', None), f.get('dayNight', None)), None),
-                condition_evol=WWEVOL_TO_ENUM_MAP.get(f.get('wwevol'), None),
-                native_precipitation=precipitation,
-                native_temperature=f.get('tempMax', None),
-                native_templow=f.get('tempMin', None),
-                native_wind_gust_speed=native_wind_gust_speed,
-                native_wind_speed=f.get('wind', {}).get('speed'),
-                precipitation_probability=f.get('precipChance', None),
-                wind_bearing=wind_bearing,
-                is_daytime=is_daytime,
-                text=f.get('text', {}).get(lang, ""),
-                sunrise=sunrise.isoformat() if sunrise is not None else None,
-                sunset=sunset.isoformat() if sunset is not None else None
+        forecast = list()
+        for f in sequence:
+            forecast.append(
+                IrmKmiRadarForecast(
+                    datetime=f.get("time"),
+                    native_precipitation=f.get('value'),
+                    rain_forecast_max=round(f.get('positionHigher') * ratio, 2),
+                    rain_forecast_min=round(f.get('positionLower') * ratio, 2),
+                    might_rain=f.get('positionHigher') > 0,
+                    unit=unit
+                )
             )
-            # Swap temperature and templow if needed
-            if (forecast['native_templow'] is not None
-                    and forecast['native_temperature'] is not None
-                    and forecast['native_templow'] > forecast['native_temperature']):
-                (forecast['native_templow'], forecast['native_temperature']) = \
-                    (forecast['native_temperature'], forecast['native_templow'])
-
-            forecasts.append(forecast)
-
-        return forecasts
+        return forecast
 
     def get_hourly_forecast(self, tz: ZoneInfo) -> List[Forecast]:
         """
@@ -452,38 +344,105 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_radar_forecast(self) -> List[IrmKmiRadarForecast]:
+    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast]:
         """
-        Create a list of short term forecasts for rain based on the data provided by the rain radar
+        Parse the API data we currently have to build the daily forecast list.
 
-        :return: chronologically ordered list of 'few'-minutes radar forecasts
+        :param tz: time zone to use to interpret the timestamps in the forecast (generally is Europe/Brussels)
+        :param lang: langage to get data for (must be 'fr', 'nl', 'de' or 'en')
+        :return: chronologically ordered list of daily forecasts
         """
-        data = self._api_data.get('animation', {})
-
-        if not isinstance(data, dict):
+        data = self._api_data.get('for', {}).get('daily')
+        if data is None or not isinstance(data, list) or len(data) == 0:
             return []
-        sequence = data.get("sequence", [])
-        unit = data.get("unit", {}).get("en", None)
-        ratios = [f['value'] / f['position'] for f in sequence if f['position'] > 0]
 
-        if len(ratios) > 0:
-            ratio = mean(ratios)
-        else:
-            ratio = 0
+        forecasts = list()
+        forecast_day = datetime.now(tz)
 
-        forecast = list()
-        for f in sequence:
-            forecast.append(
-                IrmKmiRadarForecast(
-                    datetime=f.get("time"),
-                    native_precipitation=f.get('value'),
-                    rain_forecast_max=round(f.get('positionHigher') * ratio, 2),
-                    rain_forecast_min=round(f.get('positionLower') * ratio, 2),
-                    might_rain=f.get('positionHigher') > 0,
-                    unit=unit
-                )
+        for (idx, f) in enumerate(data):
+            precipitation = None
+            if f.get('precipQuantity', None) is not None:
+                try:
+                    precipitation = float(f.get('precipQuantity'))
+                except (TypeError, ValueError):
+                    pass
+
+            native_wind_gust_speed = None
+            if f.get('wind', {}).get('peakSpeed') is not None:
+                try:
+                    native_wind_gust_speed = int(f.get('wind', {}).get('peakSpeed'))
+                except (TypeError, ValueError):
+                    pass
+
+            wind_bearing = None
+            if f.get('wind', {}).get('dirText', {}).get('en') != 'VAR':
+                try:
+                    wind_bearing = (float(f.get('wind', {}).get('dir')) + 180) % 360
+                except (TypeError, ValueError):
+                    pass
+
+            is_daytime = f.get('dayNight', None) == 'd'
+
+            day_name = f.get('dayName', {}).get('en', None)
+            timestamp = f.get('timestamp', None)
+            if timestamp is not None:
+                forecast_day = datetime.fromisoformat(timestamp)
+            elif day_name in WEEKDAYS:
+                forecast_day = self._next_weekday(forecast_day, WEEKDAYS.index(day_name))
+            elif day_name in ['Today', 'Tonight']:
+                forecast_day = datetime.now(tz)
+            elif day_name == 'Tomorrow':
+                forecast_day = datetime.now(tz) + timedelta(days=1)
+
+            sunrise_sec = f.get('dawnRiseSeconds', None)
+            if sunrise_sec is None:
+                sunrise_sec = f.get('sunRise', None)
+            sunrise = None
+            if sunrise_sec is not None:
+                try:
+                    sunrise = (forecast_day.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
+                               + timedelta(seconds=float(sunrise_sec)))
+                except (TypeError, ValueError):
+                    pass
+
+            sunset_sec = f.get('dawnSetSeconds', None)
+            if sunset_sec is None:
+                sunset_sec = f.get('sunSet', None)
+            sunset = None
+            if sunset_sec is not None:
+                try:
+                    sunset = (forecast_day.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
+                              + timedelta(seconds=float(sunset_sec)))
+                except (TypeError, ValueError):
+                    pass
+
+            forecast = IrmKmiForecast(
+                datetime=(forecast_day.strftime('%Y-%m-%d')),
+                condition=self._cdt_map.get((f.get('ww1', None), f.get('dayNight', None)), None),
+                condition_2=self._cdt_map.get((f.get('ww2', None), f.get('dayNight', None)), None),
+                condition_evol=WWEVOL_TO_ENUM_MAP.get(f.get('wwevol'), None),
+                native_precipitation=precipitation,
+                native_temperature=f.get('tempMax', None),
+                native_templow=f.get('tempMin', None),
+                native_wind_gust_speed=native_wind_gust_speed,
+                native_wind_speed=f.get('wind', {}).get('speed'),
+                precipitation_probability=f.get('precipChance', None),
+                wind_bearing=wind_bearing,
+                is_daytime=is_daytime,
+                text=f.get('text', {}).get(lang, ""),
+                sunrise=sunrise.isoformat() if sunrise is not None else None,
+                sunset=sunset.isoformat() if sunset is not None else None
             )
-        return forecast
+            # Swap temperature and templow if needed
+            if (forecast['native_templow'] is not None
+                    and forecast['native_temperature'] is not None
+                    and forecast['native_templow'] > forecast['native_temperature']):
+                (forecast['native_templow'], forecast['native_temperature']) = \
+                    (forecast['native_temperature'], forecast['native_templow'])
+
+            forecasts.append(forecast)
+
+        return forecasts
 
     def get_animation_data(self, tz: ZoneInfo, lang: str, style: str, dark_mode: bool) -> RadarAnimationData:
         """
@@ -605,6 +564,45 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return PollenParser(pollen_svg).get_pollen_data()
 
+    def get_city(self) -> str | None:
+        """
+        Get the city for which we currently have the forecast
+
+        :return: city name as str or None if unavailable
+        """
+        return self._api_data.get('cityName', None)
+
+    def get_country(self) -> str | None:
+        """
+        Get the two-letters country code for which we currently have the forecast
+
+        :return: country code as str or None if unavailable
+        """
+        return self._api_data.get('country', None)
+
+    def _get_uv_index(self) -> float | None:
+        uv_index = None
+        module_data = self._api_data.get('module', None)
+        if not (module_data is None or not isinstance(module_data, list)):
+            for module in module_data:
+                if module.get('type', None) == 'uv':
+                    uv_index = module.get('data', {}).get('levelValue')
+        return uv_index
+
+    def _get_now_hourly(self, tz: ZoneInfo) -> dict | None:
+        now_hourly = None
+        hourly_forecast_data = self._api_data.get('for', {}).get('hourly')
+        now = datetime.now(tz)
+        if not (hourly_forecast_data is None
+                or not isinstance(hourly_forecast_data, list)
+                or len(hourly_forecast_data) == 0):
+
+            for current in hourly_forecast_data[:4]:
+                if now.strftime('%H') == current['hour']:
+                    now_hourly = current
+                    break
+        return now_hourly
+
     @staticmethod
     def _merge_url_and_params(url: str, params: dict) -> str:
         """Merge query string params in the URL"""
@@ -615,3 +613,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         new_url = parsed_url._replace(query=new_query)
         return str(urllib.parse.urlunparse(new_url))
 
+    @staticmethod
+    def _next_weekday(current, weekday):
+        days_ahead = weekday - current.weekday()
+        if days_ahead < 0:
+            days_ahead += 7
+        return current + timedelta(days_ahead)

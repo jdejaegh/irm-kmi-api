@@ -6,6 +6,8 @@ POLLEN_NAMES: Final = {'Alder', 'Ash', 'Birch', 'Grasses', 'Hazel', 'Mugwort', '
 POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange', 'high': 'red', 'very high': 'purple',
                          'active': 'active'}
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+# TODO move those to an Enum
 OPTION_STYLE_STD: Final = 'standard_style'
 OPTION_STYLE_CONTRAST: Final = 'contrast_style'
 OPTION_STYLE_YELLOW_RED: Final = 'yellow_red_style'
@@ -16,6 +18,7 @@ STYLE_TO_PARAM_MAP: Final = {
     OPTION_STYLE_YELLOW_RED: 3,
     OPTION_STYLE_SATELLITE: 4
 }
+
 MAP_WARNING_ID_TO_SLUG: Final = {
     0: 'wind',
     1: 'rain',
