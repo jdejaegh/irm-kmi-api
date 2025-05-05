@@ -3,7 +3,8 @@ import logging
 import xml.etree.ElementTree as ET
 from typing import List
 
-from .const import POLLEN_LEVEL_TO_COLOR, POLLEN_NAMES
+from .const import POLLEN_LEVEL_TO_COLOR
+from .data import IrmKmiPollenNames
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,10 +40,10 @@ class PollenParser:
         elements: List[ET.Element] = self._extract_elements(root)
 
         pollens = {e.attrib.get('x', None): self._get_elem_text(e).lower()
-                   for e in elements if 'tspan' in e.tag and self._get_elem_text(e) in POLLEN_NAMES}
+                   for e in elements if 'tspan' in e.tag and self._get_elem_text(e) in IrmKmiPollenNames}
 
         pollen_levels = {e.attrib.get('x', None): POLLEN_LEVEL_TO_COLOR[self._get_elem_text(e)]
-                         for e in elements if 'tspan' in e.tag and self._get_elem_text(e) in POLLEN_LEVEL_TO_COLOR}
+                         for e in elements if 'tspan' in e.tag and self._get_elem_text(e) in IrmKmiPollenNames}
 
         level_dots = {e.attrib.get('cx', None) for e in elements if 'circle' in e.tag}
 
@@ -84,12 +85,12 @@ class PollenParser:
     @staticmethod
     def get_default_data() -> dict:
         """Return all the known pollen with 'none' value"""
-        return {k.lower(): 'none' for k in POLLEN_NAMES}
+        return {k.value.lower(): 'none' for k in IrmKmiPollenNames}
 
     @staticmethod
     def get_unavailable_data() -> dict:
         """Return all the known pollen with None value"""
-        return {k.lower(): None for k in POLLEN_NAMES}
+        return {k.value.lower(): None for k in IrmKmiPollenNames}
 
     @staticmethod
     def get_option_values() -> List[str]:

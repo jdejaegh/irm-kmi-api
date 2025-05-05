@@ -49,6 +49,17 @@ class IrmKmiRadarStyle(Enum):
     OPTION_STYLE_YELLOW_RED = 'yellow_red_style'
     OPTION_STYLE_SATELLITE = 'satellite_style'
 
+class IrmKmiPollenNames(Enum):
+    """Pollens names from the API"""
+
+    ALDER = 'Alder'
+    ASH = 'Ash'
+    BIRCH = 'Birch'
+    GRASSES = 'Grasses'
+    HAZEL = 'Hazel'
+    MUGWORT = 'Mugwort'
+    OAK = 'Oak'
+
 class IrmKmiForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
 
