@@ -2,6 +2,7 @@ from typing import Final
 
 from irm_kmi_api.data import IrmKmiConditionEvol
 
+# TODO enum as well for those three values?
 POLLEN_NAMES: Final = {'Alder', 'Ash', 'Birch', 'Grasses', 'Hazel', 'Mugwort', 'Oak'}
 POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange', 'high': 'red', 'very high': 'purple',
                          'active': 'active'}
