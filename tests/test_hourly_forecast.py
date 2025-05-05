@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from freezegun import freeze_time
 
-from irm_kmi_api.data import Forecast
+from irm_kmi_api import Forecast
 from tests.conftest import get_api_with_data
 from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
 

@@ -8,9 +8,9 @@ from zoneinfo import ZoneInfo
 import freezegun
 import pytest
 
-from irm_kmi_api.api import IrmKmiApiClient, IrmKmiApiClientHa
-from irm_kmi_api.data import CurrentWeatherData
-from irm_kmi_api.pollen import PollenParser
+from irm_kmi_api import IrmKmiApiClient, IrmKmiApiClientHa
+from irm_kmi_api import CurrentWeatherData
+from irm_kmi_api import PollenParser
 
 
 @freezegun.freeze_time(dt.fromisoformat('2025-05-03T17:30:00+00:00'))

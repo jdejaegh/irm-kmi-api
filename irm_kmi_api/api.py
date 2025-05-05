@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 import aiohttp
 import async_timeout
 
+from .pollen import PollenName, PollenLevel
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS, WWEVOL_TO_ENUM_MAP
 from .data import (AnimationFrameData, CurrentWeatherData, ExtendedForecast,
@@ -533,7 +534,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return result if len(result) > 0 else []
 
-    async def get_pollen(self) -> Dict[str, str | None]:
+    async def get_pollen(self) -> Dict[PollenName, PollenLevel | None]:
         """
         Get SVG pollen info from the API, return the pollen data dict
 

@@ -6,9 +6,9 @@ from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 from zoneinfo import ZoneInfo
 
-from irm_kmi_api.api import IrmKmiApiClientHa
-from irm_kmi_api.data import AnimationFrameData, RadarAnimationData, RadarStyle
-from irm_kmi_api.rain_graph import RainGraph
+from irm_kmi_api import IrmKmiApiClientHa
+from irm_kmi_api import AnimationFrameData, RadarAnimationData, RadarStyle
+from irm_kmi_api import RainGraph
 from tests.conftest import load_fixture
 
 

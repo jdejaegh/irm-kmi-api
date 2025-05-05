@@ -2,7 +2,7 @@ from datetime import datetime
 
 from freezegun import freeze_time
 
-from irm_kmi_api.data import WarningType
+from irm_kmi_api import WarningType
 from tests.conftest import get_api_with_data
 
 

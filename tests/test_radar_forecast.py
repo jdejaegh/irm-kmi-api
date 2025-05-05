@@ -1,6 +1,6 @@
 import pytest
 
-from irm_kmi_api.data import RadarForecast
+from irm_kmi_api import RadarForecast
 from tests.conftest import get_api_with_data
 
 

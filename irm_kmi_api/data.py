@@ -54,8 +54,6 @@ class RadarStyle(Enum):
 
 
 class PollenName(Enum):
-    """Pollens names from the API"""
-
     ALDER = 'alder'
     ASH = 'ash'
     BIRCH = 'birch'
