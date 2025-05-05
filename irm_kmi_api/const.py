@@ -1,23 +1,23 @@
 from typing import Final
 
-from .data import IrmKmiConditionEvol, IrmKmiRadarStyle, IrmKmiPollenLevels
+from .data import ConditionEvol, RadarStyle, PollenLevels
 
 POLLEN_LEVEL_TO_COLOR = {
-    'null': IrmKmiPollenLevels.GREEN,
-    'low': IrmKmiPollenLevels.YELLOW,
-    'moderate': IrmKmiPollenLevels.ORANGE,
-    'high': IrmKmiPollenLevels.RED,
-    'very high': IrmKmiPollenLevels.PURPLE,
-    'active': IrmKmiPollenLevels.ACTIVE
+    'null': PollenLevels.GREEN,
+    'low': PollenLevels.YELLOW,
+    'moderate': PollenLevels.ORANGE,
+    'high': PollenLevels.RED,
+    'very high': PollenLevels.PURPLE,
+    'active': PollenLevels.ACTIVE
 }
 
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 STYLE_TO_PARAM_MAP: Final = {
-    IrmKmiRadarStyle.OPTION_STYLE_STD: 1,
-    IrmKmiRadarStyle.OPTION_STYLE_CONTRAST: 2,
-    IrmKmiRadarStyle.OPTION_STYLE_YELLOW_RED: 3,
-    IrmKmiRadarStyle.OPTION_STYLE_SATELLITE: 4
+    RadarStyle.OPTION_STYLE_STD: 1,
+    RadarStyle.OPTION_STYLE_CONTRAST: 2,
+    RadarStyle.OPTION_STYLE_YELLOW_RED: 3,
+    RadarStyle.OPTION_STYLE_SATELLITE: 4
 }
 
 MAP_WARNING_ID_TO_SLUG: Final = {
@@ -34,7 +34,7 @@ MAP_WARNING_ID_TO_SLUG: Final = {
     17: 'coldspell'}
 
 WWEVOL_TO_ENUM_MAP: Final = {
-    None: IrmKmiConditionEvol.STABLE,
-    0: IrmKmiConditionEvol.ONE_WAY,
-    1: IrmKmiConditionEvol.TWO_WAYS
+    None: ConditionEvol.STABLE,
+    0: ConditionEvol.ONE_WAY,
+    1: ConditionEvol.TWO_WAYS
 }

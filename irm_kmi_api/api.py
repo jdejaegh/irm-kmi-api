@@ -17,8 +17,8 @@ import async_timeout
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
-                   IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
-                   WarningData, IrmKmiRadarStyle)
+                   ExtendedForecast, IrmKmiRadarForecast, RadarAnimationData,
+                   WarningData, RadarStyle)
 from .pollen import PollenParser
 
 _LOGGER = logging.getLogger(__name__)
@@ -344,7 +344,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast]:
+    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[ExtendedForecast]:
         """
         Parse the API data we currently have to build the daily forecast list.
 
@@ -416,7 +416,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                 except (TypeError, ValueError):
                     pass
 
-            forecast = IrmKmiForecast(
+            forecast = ExtendedForecast(
                 datetime=(forecast_day.strftime('%Y-%m-%d')),
                 condition=self._cdt_map.get((f.get('ww1', None), f.get('dayNight', None)), None),
                 condition_2=self._cdt_map.get((f.get('ww2', None), f.get('dayNight', None)), None),
@@ -444,7 +444,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_animation_data(self, tz: ZoneInfo, lang: str, style: IrmKmiRadarStyle, dark_mode: bool) -> RadarAnimationData:
+    def get_animation_data(self, tz: ZoneInfo, lang: str, style: RadarStyle, dark_mode: bool) -> RadarAnimationData:
         """
         Get all the image URLs and create the radar animation data object.
 

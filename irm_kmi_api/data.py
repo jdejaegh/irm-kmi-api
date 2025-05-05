@@ -36,7 +36,7 @@ class Forecast(TypedDict, total=False):
     is_daytime: bool | None  # Mandatory to use with forecast_twice_daily
 
 
-class IrmKmiConditionEvol(Enum):
+class ConditionEvol(Enum):
     """Possible state for evolution between weather conditions"""
 
     ONE_WAY = 'one_way'
@@ -44,7 +44,7 @@ class IrmKmiConditionEvol(Enum):
     STABLE = 'stable'
 
 
-class IrmKmiRadarStyle(Enum):
+class RadarStyle(Enum):
     """Possible style for the rain radar"""
 
     OPTION_STYLE_STD = 'standard_style'
@@ -53,7 +53,7 @@ class IrmKmiRadarStyle(Enum):
     OPTION_STYLE_SATELLITE = 'satellite_style'
 
 
-class IrmKmiPollenNames(Enum):
+class PollenNames(Enum):
     """Pollens names from the API"""
 
     ALDER = 'alder'
@@ -65,7 +65,7 @@ class IrmKmiPollenNames(Enum):
     OAK = 'oak'
 
 
-class IrmKmiPollenLevels(Enum):
+class PollenLevels(Enum):
     """Possible pollen levels"""
 
     NONE = 'none'
@@ -77,11 +77,11 @@ class IrmKmiPollenLevels(Enum):
     PURPLE = 'purple'
 
 
-class IrmKmiForecast(Forecast, total=False):
+class ExtendedForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
 
     condition_2: str | None
-    condition_evol: IrmKmiConditionEvol | None
+    condition_evol: ConditionEvol | None
     text: str | None
     sunrise: str | None
     sunset: str | None

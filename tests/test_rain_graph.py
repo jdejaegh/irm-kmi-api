@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, AsyncMock
 from zoneinfo import ZoneInfo
 
 from irm_kmi_api.api import IrmKmiApiClientHa
-from irm_kmi_api.data import AnimationFrameData, RadarAnimationData, IrmKmiRadarStyle
+from irm_kmi_api.data import AnimationFrameData, RadarAnimationData, RadarStyle
 from irm_kmi_api.rain_graph import RainGraph
 from tests.conftest import load_fixture
 
@@ -44,7 +44,7 @@ async def test_svg_frame_setup():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     await rain_graph._draw_svg_frame()
@@ -64,7 +64,7 @@ def test_svg_hint():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._write_hint()
@@ -80,7 +80,7 @@ def test_svg_time_bars():
         tz = datetime.UTC,
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_hour_bars()
@@ -99,7 +99,7 @@ def test_draw_chances_path():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_chances_path()
@@ -117,7 +117,7 @@ def test_draw_data_line():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_data_line()
@@ -135,7 +135,7 @@ async def test_insert_background():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     await rain_graph._insert_background()
@@ -158,7 +158,7 @@ def test_draw_current_frame_line_moving():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_current_fame_line()
@@ -186,7 +186,7 @@ def test_draw_current_frame_line_index():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_current_fame_line(0)
@@ -215,7 +215,7 @@ def test_draw_description_text():
         tz=datetime.UTC,
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._draw_description_text()
@@ -242,7 +242,7 @@ def test_draw_cloud_layer():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._insert_cloud_layer()
@@ -262,7 +262,7 @@ async def test_draw_location_layer():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     await rain_graph._draw_location()
@@ -280,7 +280,7 @@ def test_get_animation_data():
 
     tz = ZoneInfo('Europe/Brussels')
     lang = 'en'
-    style = IrmKmiRadarStyle.OPTION_STYLE_SATELLITE
+    style = RadarStyle.OPTION_STYLE_SATELLITE
     dark_mode = False
 
     api._api_data = json.loads(load_fixture("forecast.json"))
@@ -305,7 +305,7 @@ async def test_download_single_cloud():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._api_client = MagicMock()
@@ -323,7 +323,7 @@ async def test_download_many_clouds():
     rain_graph = RainGraph(
         animation_data=data,
         country='BE',
-        style=IrmKmiRadarStyle.OPTION_STYLE_STD,
+        style=RadarStyle.OPTION_STYLE_STD,
     )
 
     rain_graph._api_client = MagicMock()
@@ -338,11 +338,11 @@ def test_can_build_rain_graph_with_empty_sequence():
 
     RainGraph(
         RadarAnimationData(sequence=None),
-        'BE', IrmKmiRadarStyle.OPTION_STYLE_STD
+        'BE', RadarStyle.OPTION_STYLE_STD
     )
 
     RainGraph(
         RadarAnimationData(sequence=[]),
-        'BE', IrmKmiRadarStyle.OPTION_STYLE_STD
+        'BE', RadarStyle.OPTION_STYLE_STD
     )
 
