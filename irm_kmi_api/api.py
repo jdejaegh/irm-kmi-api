@@ -17,7 +17,7 @@ import async_timeout
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
-                   ExtendedForecast, IrmKmiRadarForecast, RadarAnimationData,
+                   ExtendedForecast, RadarForecast, RadarAnimationData,
                    WarningData, RadarStyle, WarningType)
 from .pollen import PollenParser
 
@@ -30,10 +30,6 @@ class IrmKmiApiError(Exception):
 
 class IrmKmiApiCommunicationError(IrmKmiApiError):
     """Exception to indicate a communication error."""
-
-
-class IrmKmiApiParametersError(IrmKmiApiError):
-    """Exception to indicate a parameter error."""
 
 
 class IrmKmiApiClient:
@@ -254,7 +250,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return current_weather
 
-    def get_radar_forecast(self) -> List[IrmKmiRadarForecast]:
+    def get_radar_forecast(self) -> List[RadarForecast]:
         """
         Create a list of short term forecasts for rain based on the data provided by the rain radar
 
@@ -276,7 +272,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         forecast = list()
         for f in sequence:
             forecast.append(
-                IrmKmiRadarForecast(
+                RadarForecast(
                     datetime=f.get("time"),
                     native_precipitation=f.get('value'),
                     rain_forecast_max=round(f.get('positionHigher') * ratio, 2),

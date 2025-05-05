@@ -126,7 +126,7 @@ class WarningData(TypedDict, total=False):
     ends_at: datetime
 
 
-class IrmKmiRadarForecast(Forecast):
+class RadarForecast(Forecast):
     """Forecast class to handle rain forecast from the IRM KMI rain radar"""
 
     rain_forecast_max: float
