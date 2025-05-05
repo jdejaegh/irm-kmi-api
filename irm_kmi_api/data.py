@@ -53,7 +53,7 @@ class RadarStyle(Enum):
     OPTION_STYLE_SATELLITE = 'satellite_style'
 
 
-class PollenNames(Enum):
+class PollenName(Enum):
     """Pollens names from the API"""
 
     ALDER = 'alder'
@@ -65,7 +65,7 @@ class PollenNames(Enum):
     OAK = 'oak'
 
 
-class PollenLevels(Enum):
+class PollenLevel(Enum):
     """Possible pollen levels"""
 
     NONE = 'none'
@@ -76,6 +76,21 @@ class PollenLevels(Enum):
     RED = 'red'
     PURPLE = 'purple'
 
+class WarningType(Enum):
+    """Possible warning types"""
+
+    COLD = 'cold'
+    COLDSPELL = 'coldspell'
+    FOG = 'fog'
+    ICE_OR_SNOW = 'ice_or_snow'
+    RAIN = 'rain'
+    STORM_SURGE = 'storm_surge'
+    THUNDER = 'thunder'
+    THUNDERSTORM_LARGE_RAINFALL = 'thunderstorm_large_rainfall'
+    THUNDERSTORM_STRONG_GUSTS = 'thunderstorm_strong_gusts'
+    THUNDER_WIND_RAIN = 'thunder_wind_rain'
+    WIND = 'wind'
+    UNKNOWN = 'unknown'
 
 class ExtendedForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
@@ -102,7 +117,7 @@ class CurrentWeatherData(TypedDict, total=False):
 class WarningData(TypedDict, total=False):
     """Holds data about a specific warning"""
 
-    slug: str
+    slug: WarningType
     id: int
     level: int
     friendly_name: str

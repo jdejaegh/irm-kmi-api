@@ -1,14 +1,14 @@
 from typing import Final
 
-from .data import ConditionEvol, RadarStyle, PollenLevels
+from .data import ConditionEvol, RadarStyle, PollenLevel, WarningType
 
 POLLEN_LEVEL_TO_COLOR = {
-    'null': PollenLevels.GREEN,
-    'low': PollenLevels.YELLOW,
-    'moderate': PollenLevels.ORANGE,
-    'high': PollenLevels.RED,
-    'very high': PollenLevels.PURPLE,
-    'active': PollenLevels.ACTIVE
+    'null': PollenLevel.GREEN,
+    'low': PollenLevel.YELLOW,
+    'moderate': PollenLevel.ORANGE,
+    'high': PollenLevel.RED,
+    'very high': PollenLevel.PURPLE,
+    'active': PollenLevel.ACTIVE
 }
 
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -21,17 +21,18 @@ STYLE_TO_PARAM_MAP: Final = {
 }
 
 MAP_WARNING_ID_TO_SLUG: Final = {
-    0: 'wind',
-    1: 'rain',
-    2: 'ice_or_snow',
-    3: 'thunder',
-    7: 'fog',
-    9: 'cold',
-    12: 'thunder_wind_rain',
-    13: 'thunderstorm_strong_gusts',
-    14: 'thunderstorm_large_rainfall',
-    15: 'storm_surge',
-    17: 'coldspell'}
+    0: WarningType.WIND,
+    1: WarningType.RAIN,
+    2: WarningType.ICE_OR_SNOW,
+    3: WarningType.THUNDER,
+    7: WarningType.FOG,
+    9: WarningType.COLD,
+    12: WarningType.THUNDER_WIND_RAIN,
+    13: WarningType.THUNDERSTORM_STRONG_GUSTS,
+    14: WarningType.THUNDERSTORM_LARGE_RAINFALL,
+    15: WarningType.STORM_SURGE,
+    17: WarningType.COLDSPELL
+}
 
 WWEVOL_TO_ENUM_MAP: Final = {
     None: ConditionEvol.STABLE,

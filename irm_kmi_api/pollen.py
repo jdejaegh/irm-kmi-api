@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from typing import List, Dict
 
 from .const import POLLEN_LEVEL_TO_COLOR
-from .data import PollenNames, PollenLevels
+from .data import PollenName, PollenLevel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class PollenParser:
     ):
         self._xml = xml_string
 
-    def get_pollen_data(self) -> Dict[PollenNames, PollenLevels | None]:
+    def get_pollen_data(self) -> Dict[PollenName, PollenLevel | None]:
         """
         Parse the SVG and extract the pollen data from the image.
         If an error occurs, return the default value.
@@ -40,7 +40,7 @@ class PollenParser:
         elements: List[ET.Element] = self._extract_elements(root)
 
         pollens = {e.attrib.get('x', None): self._get_txt(e).lower()
-                   for e in elements if 'tspan' in e.tag and str(self._get_txt(e)).lower() in PollenNames}
+                   for e in elements if 'tspan' in e.tag and str(self._get_txt(e)).lower() in PollenName}
 
         pollen_levels = {e.attrib.get('x', None): POLLEN_LEVEL_TO_COLOR[self._get_txt(e)]
                          for e in elements if 'tspan' in e.tag and self._get_txt(e) in POLLEN_LEVEL_TO_COLOR}
@@ -53,7 +53,7 @@ class PollenParser:
         for position, pollen in pollens.items():
             # Check if pollen is a known one
             try:
-                pollen: PollenNames = PollenNames(pollen)
+                pollen: PollenName = PollenName(pollen)
             except ValueError:
                 _LOGGER.warning(f'Unknown pollen name {pollen}')
                 continue
@@ -62,7 +62,7 @@ class PollenParser:
                 pollen_data[pollen] = pollen_levels[position]
                 _LOGGER.debug(f"{pollen.value} is {pollen_data[pollen]} according to text")
             # If text is 'active' or if there is no text, check the dot as a fallback
-            if pollen_data[pollen] not in {PollenLevels.NONE, PollenLevels.ACTIVE}:
+            if pollen_data[pollen] not in {PollenLevel.NONE, PollenLevel.ACTIVE}:
                 _LOGGER.debug(f"{pollen} trusting text")
             else:
                 for dot in level_dots:
@@ -72,15 +72,15 @@ class PollenParser:
                         pass
                     else:
                         if 24 <= relative_x_position <= 34:
-                            pollen_data[pollen] = PollenLevels.GREEN
+                            pollen_data[pollen] = PollenLevel.GREEN
                         elif 13 <= relative_x_position <= 23:
-                            pollen_data[pollen] = PollenLevels.YELLOW
+                            pollen_data[pollen] = PollenLevel.YELLOW
                         elif -5 <= relative_x_position <= 5:
-                            pollen_data[pollen] = PollenLevels.ORANGE
+                            pollen_data[pollen] = PollenLevel.ORANGE
                         elif -23 <= relative_x_position <= -13:
-                            pollen_data[pollen] = PollenLevels.RED
+                            pollen_data[pollen] = PollenLevel.RED
                         elif -34 <= relative_x_position <= -24:
-                            pollen_data[pollen] = PollenLevels.PURPLE
+                            pollen_data[pollen] = PollenLevel.PURPLE
 
                 _LOGGER.debug(f"{pollen.value} is {pollen_data[pollen]} according to dot")
 
@@ -88,19 +88,19 @@ class PollenParser:
         return pollen_data
 
     @staticmethod
-    def get_default_data() -> Dict[PollenNames, PollenLevels | None]:
+    def get_default_data() -> Dict[PollenName, PollenLevel | None]:
         """Return all the known pollen with 'none' value"""
-        return {k: PollenLevels.NONE for k in PollenNames}
+        return {k: PollenLevel.NONE for k in PollenName}
 
     @staticmethod
-    def get_unavailable_data() -> Dict[PollenNames, PollenLevels | None]:
+    def get_unavailable_data() -> Dict[PollenName, PollenLevel | None]:
         """Return all the known pollen with None value"""
-        return {k: None for k in PollenNames}
+        return {k: None for k in PollenName}
 
     @staticmethod
-    def get_option_values() -> List[PollenLevels]:
+    def get_option_values() -> List[PollenLevel]:
         """List all the values that the pollen can have"""
-        return list(POLLEN_LEVEL_TO_COLOR.values()) + [PollenLevels.NONE]
+        return list(POLLEN_LEVEL_TO_COLOR.values()) + [PollenLevel.NONE]
 
     @staticmethod
     def _extract_elements(root) -> List[ET.Element]:

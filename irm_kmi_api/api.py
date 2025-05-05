@@ -18,7 +18,7 @@ from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
                    ExtendedForecast, IrmKmiRadarForecast, RadarAnimationData,
-                   WarningData, RadarStyle)
+                   WarningData, RadarStyle, WarningType)
 from .pollen import PollenParser
 
 _LOGGER = logging.getLogger(__name__)
@@ -525,7 +525,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
             result.append(
                 WarningData(
-                    slug=SLUG_MAP.get(warning_id, 'unknown'),
+                    slug=SLUG_MAP.get(warning_id, WarningType.UNKNOWN),
                     id=warning_id,
                     level=level,
                     friendly_name=data.get('warningType', {}).get('name', {}).get(lang, ''),
