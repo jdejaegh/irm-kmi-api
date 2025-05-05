@@ -20,7 +20,7 @@ dependencies = [
     "async-timeout>=4.0.3",
     "svgwrite>=1.4.3",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [project.urls]
 Homepage = "https://github.com/jdejaegh/irm-kmi-api"
