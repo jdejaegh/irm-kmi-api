@@ -39,11 +39,11 @@ class PollenParser:
 
         elements: List[ET.Element] = self._extract_elements(root)
 
-        pollens = {e.attrib.get('x', None): self._get_elem_text(e).lower()
-                   for e in elements if 'tspan' in e.tag and str(self._get_elem_text(e)).lower() in IrmKmiPollenNames}
+        pollens = {e.attrib.get('x', None): self._get_txt(e).lower()
+                   for e in elements if 'tspan' in e.tag and str(self._get_txt(e)).lower() in IrmKmiPollenNames}
 
-        pollen_levels = {e.attrib.get('x', None): POLLEN_LEVEL_TO_COLOR[self._get_elem_text(e)]
-                         for e in elements if 'tspan' in e.tag and self._get_elem_text(e) in POLLEN_LEVEL_TO_COLOR}
+        pollen_levels = {e.attrib.get('x', None): POLLEN_LEVEL_TO_COLOR[self._get_txt(e)]
+                         for e in elements if 'tspan' in e.tag and self._get_txt(e) in POLLEN_LEVEL_TO_COLOR}
 
         level_dots = {e.attrib.get('cx', None) for e in elements if 'circle' in e.tag}
 
@@ -112,7 +112,7 @@ class PollenParser:
         return elements
 
     @staticmethod
-    def _get_elem_text(e) -> str | None:
+    def _get_txt(e) -> str | None:
         if e.text is not None:
             return e.text.strip()
         return None

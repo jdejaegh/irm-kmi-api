@@ -149,7 +149,7 @@ class RainGraph:
         """
         return self._animation_data.get('hint', '')
 
-    async def _download_clouds(self, idx=None):
+    async def _download_clouds(self, idx: int | None = None):
         """
         Download cloud images and save the result in the internal state.
 

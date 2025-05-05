@@ -37,10 +37,13 @@ class Forecast(TypedDict, total=False):
 
 
 class IrmKmiConditionEvol(Enum):
+    """Possible state for evolution between weather conditions"""
+
     ONE_WAY = 'one_way'
     TWO_WAYS = 'two_ways'
     STABLE = 'stable'
-    
+
+
 class IrmKmiRadarStyle(Enum):
     """Possible style for the rain radar"""
 
@@ -48,6 +51,7 @@ class IrmKmiRadarStyle(Enum):
     OPTION_STYLE_CONTRAST = 'contrast_style'
     OPTION_STYLE_YELLOW_RED = 'yellow_red_style'
     OPTION_STYLE_SATELLITE = 'satellite_style'
+
 
 class IrmKmiPollenNames(Enum):
     """Pollens names from the API"""
@@ -72,6 +76,7 @@ class IrmKmiPollenLevels(Enum):
     RED = 'red'
     PURPLE = 'purple'
 
+
 class IrmKmiForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
 
@@ -84,6 +89,7 @@ class IrmKmiForecast(Forecast, total=False):
 
 class CurrentWeatherData(TypedDict, total=False):
     """Class to hold the currently observable weather at a given location"""
+
     condition: str | None
     temperature: float | None
     wind_speed: float | None
@@ -95,6 +101,7 @@ class CurrentWeatherData(TypedDict, total=False):
 
 class WarningData(TypedDict, total=False):
     """Holds data about a specific warning"""
+
     slug: str
     id: int
     level: int
@@ -106,6 +113,7 @@ class WarningData(TypedDict, total=False):
 
 class IrmKmiRadarForecast(Forecast):
     """Forecast class to handle rain forecast from the IRM KMI rain radar"""
+
     rain_forecast_max: float
     rain_forecast_min: float
     might_rain: bool
@@ -114,6 +122,7 @@ class IrmKmiRadarForecast(Forecast):
 
 class AnimationFrameData(TypedDict, total=False):
     """Holds one single frame of the radar camera, along with the timestamp of the frame"""
+
     time: datetime | None
     image: bytes | str | None
     value: float | None
@@ -124,6 +133,7 @@ class AnimationFrameData(TypedDict, total=False):
 
 class RadarAnimationData(TypedDict, total=False):
     """Holds frames and additional data for the animation to be rendered"""
+
     sequence: List[AnimationFrameData] | None
     most_recent_image_idx: int | None
     hint: str | None
