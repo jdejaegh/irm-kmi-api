@@ -52,13 +52,25 @@ class IrmKmiRadarStyle(Enum):
 class IrmKmiPollenNames(Enum):
     """Pollens names from the API"""
 
-    ALDER = 'Alder'
-    ASH = 'Ash'
-    BIRCH = 'Birch'
-    GRASSES = 'Grasses'
-    HAZEL = 'Hazel'
-    MUGWORT = 'Mugwort'
-    OAK = 'Oak'
+    ALDER = 'alder'
+    ASH = 'ash'
+    BIRCH = 'birch'
+    GRASSES = 'grasses'
+    HAZEL = 'hazel'
+    MUGWORT = 'mugwort'
+    OAK = 'oak'
+
+
+class IrmKmiPollenLevels(Enum):
+    """Possible pollen levels"""
+
+    NONE = 'none'
+    ACTIVE = 'active'
+    GREEN = 'green'
+    YELLOW = 'yellow'
+    ORANGE = 'orange'
+    RED = 'red'
+    PURPLE = 'purple'
 
 class IrmKmiForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""

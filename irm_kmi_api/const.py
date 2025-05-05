@@ -1,14 +1,14 @@
 from typing import Final
 
-from .data import IrmKmiConditionEvol, IrmKmiRadarStyle
+from .data import IrmKmiConditionEvol, IrmKmiRadarStyle, IrmKmiPollenLevels
 
 POLLEN_LEVEL_TO_COLOR = {
-    'null': 'green',
-    'low': 'yellow',
-    'moderate': 'orange',
-    'high': 'red',
-    'very high': 'purple',
-    'active': 'active'
+    'null': IrmKmiPollenLevels.GREEN,
+    'low': IrmKmiPollenLevels.YELLOW,
+    'moderate': IrmKmiPollenLevels.ORANGE,
+    'high': IrmKmiPollenLevels.RED,
+    'very high': IrmKmiPollenLevels.PURPLE,
+    'active': IrmKmiPollenLevels.ACTIVE
 }
 
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
