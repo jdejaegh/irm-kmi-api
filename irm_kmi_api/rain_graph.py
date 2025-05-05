@@ -6,7 +6,6 @@ import datetime
 import logging
 from typing import List, Self
 
-import async_timeout
 from svgwrite import Drawing
 from svgwrite.animate import Animate
 from svgwrite.container import FONT_TEMPLATE
@@ -186,7 +185,7 @@ class RainGraph:
 
         for url in urls:
             coroutines.append(self._api_client.get_image(url))
-        async with async_timeout.timeout(60):
+        async with asyncio.timeout(60):
             images_from_api = await asyncio.gather(*coroutines)
 
         _LOGGER.info(f"Just downloaded {len(images_from_api)} images")
