@@ -1,9 +1,16 @@
 from typing import Final
 
-from irm_kmi_api.data import IrmKmiConditionEvol, IrmKmiRadarStyle
+from .data import IrmKmiConditionEvol, IrmKmiRadarStyle
 
-POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange', 'high': 'red', 'very high': 'purple',
-                         'active': 'active'}
+POLLEN_LEVEL_TO_COLOR = {
+    'null': 'green',
+    'low': 'yellow',
+    'moderate': 'orange',
+    'high': 'red',
+    'very high': 'purple',
+    'active': 'active'
+}
+
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 STYLE_TO_PARAM_MAP: Final = {
