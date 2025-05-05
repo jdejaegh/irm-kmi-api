@@ -8,17 +8,17 @@ import time
 import urllib.parse
 from datetime import datetime, timedelta
 from statistics import mean
-from typing import List, Dict
+from typing import Dict, List
 from zoneinfo import ZoneInfo
 
 import aiohttp
 import async_timeout
 
-from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
-from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
-from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
-                   ExtendedForecast, RadarForecast, RadarAnimationData,
-                   WarningData, RadarStyle, WarningType)
+from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
+from .const import STYLE_TO_PARAM_MAP, WEEKDAYS, WWEVOL_TO_ENUM_MAP
+from .data import (AnimationFrameData, CurrentWeatherData, ExtendedForecast,
+                   Forecast, RadarAnimationData, RadarForecast, RadarStyle,
+                   WarningData, WarningType)
 from .pollen import PollenParser
 
 _LOGGER = logging.getLogger(__name__)

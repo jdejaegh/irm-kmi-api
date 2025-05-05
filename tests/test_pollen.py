@@ -1,7 +1,7 @@
 import logging
 from unittest.mock import AsyncMock
 
-from irm_kmi_api.data import PollenName, PollenLevel
+from irm_kmi_api.data import PollenLevel, PollenName
 from irm_kmi_api.pollen import PollenParser
 from tests.conftest import get_api_with_data, load_fixture
 

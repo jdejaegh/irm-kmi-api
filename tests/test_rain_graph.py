@@ -3,7 +3,7 @@ import datetime
 import json
 from datetime import datetime as dt
 from datetime import timedelta
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from zoneinfo import ZoneInfo
 
 from irm_kmi_api.api import IrmKmiApiClientHa

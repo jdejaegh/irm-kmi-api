@@ -1,10 +1,10 @@
 """Parse pollen info from SVG from IRM KMI api"""
 import logging
 import xml.etree.ElementTree as ET
-from typing import List, Dict
+from typing import Dict, List
 
 from .const import POLLEN_LEVEL_TO_COLOR
-from .data import PollenName, PollenLevel
+from .data import PollenLevel, PollenName
 
 _LOGGER = logging.getLogger(__name__)
 

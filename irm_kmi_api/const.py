@@ -1,6 +1,6 @@
 from typing import Final
 
-from .data import ConditionEvol, RadarStyle, PollenLevel, WarningType
+from .data import ConditionEvol, PollenLevel, RadarStyle, WarningType
 
 POLLEN_LEVEL_TO_COLOR = {
     'null': PollenLevel.GREEN,

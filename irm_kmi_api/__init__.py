@@ -1,6 +1,9 @@
-from .api import IrmKmiApiError, IrmKmiApiCommunicationError, IrmKmiApiClient, IrmKmiApiClientHa
-from .data import Forecast, ConditionEvol, RadarStyle, PollenName, PollenLevel, WarningType, ExtendedForecast, \
-    CurrentWeatherData, WarningData, RadarForecast, RadarAnimationData, AnimationFrameData
+from .api import (IrmKmiApiClient, IrmKmiApiClientHa,
+                  IrmKmiApiCommunicationError, IrmKmiApiError)
+from .data import (AnimationFrameData, ConditionEvol, CurrentWeatherData,
+                   ExtendedForecast, Forecast, PollenLevel, PollenName,
+                   RadarAnimationData, RadarForecast, RadarStyle, WarningData,
+                   WarningType)
 from .pollen import PollenParser
 from .rain_graph import RainGraph
 
