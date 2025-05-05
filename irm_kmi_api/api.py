@@ -18,7 +18,7 @@ from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
 from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
 from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
                    IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
-                   WarningData)
+                   WarningData, IrmKmiRadarStyle)
 from .pollen import PollenParser
 
 _LOGGER = logging.getLogger(__name__)
@@ -444,7 +444,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_animation_data(self, tz: ZoneInfo, lang: str, style: str, dark_mode: bool) -> RadarAnimationData:
+    def get_animation_data(self, tz: ZoneInfo, lang: str, style: IrmKmiRadarStyle, dark_mode: bool) -> RadarAnimationData:
         """
         Get all the image URLs and create the radar animation data object.
 

@@ -1,6 +1,6 @@
 from typing import Final
 
-from irm_kmi_api.data import IrmKmiConditionEvol
+from irm_kmi_api.data import IrmKmiConditionEvol, IrmKmiRadarStyle
 
 # TODO enum as well for those three values?
 POLLEN_NAMES: Final = {'Alder', 'Ash', 'Birch', 'Grasses', 'Hazel', 'Mugwort', 'Oak'}
@@ -8,16 +8,11 @@ POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange',
                          'active': 'active'}
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-# TODO move those to an Enum
-OPTION_STYLE_STD: Final = 'standard_style'
-OPTION_STYLE_CONTRAST: Final = 'contrast_style'
-OPTION_STYLE_YELLOW_RED: Final = 'yellow_red_style'
-OPTION_STYLE_SATELLITE: Final = 'satellite_style'
 STYLE_TO_PARAM_MAP: Final = {
-    OPTION_STYLE_STD: 1,
-    OPTION_STYLE_CONTRAST: 2,
-    OPTION_STYLE_YELLOW_RED: 3,
-    OPTION_STYLE_SATELLITE: 4
+    IrmKmiRadarStyle.OPTION_STYLE_STD: 1,
+    IrmKmiRadarStyle.OPTION_STYLE_CONTRAST: 2,
+    IrmKmiRadarStyle.OPTION_STYLE_YELLOW_RED: 3,
+    IrmKmiRadarStyle.OPTION_STYLE_SATELLITE: 4
 }
 
 MAP_WARNING_ID_TO_SLUG: Final = {

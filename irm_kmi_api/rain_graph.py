@@ -12,8 +12,7 @@ from svgwrite.animate import Animate
 from svgwrite.container import FONT_TEMPLATE
 
 from .api import IrmKmiApiClient, IrmKmiApiError
-from .const import OPTION_STYLE_SATELLITE
-from .data import AnimationFrameData, RadarAnimationData
+from .data import AnimationFrameData, RadarAnimationData, IrmKmiRadarStyle
 from .resources import be_black, be_satellite, be_white, nl, roboto
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ class RainGraph:
     def __init__(self,
                  animation_data: RadarAnimationData,
                  country: str,
-                 style: str,
+                 style: IrmKmiRadarStyle,
                  dark_mode: bool = False,
                  tz: datetime.tzinfo = None,
                  svg_width: float = 640,
@@ -432,7 +431,7 @@ class RainGraph:
     def _get_background_png_b64(self) -> str:
         if self._country == 'NL':
             return nl.nl_b64
-        elif self._style == OPTION_STYLE_SATELLITE:
+        elif self._style == IrmKmiRadarStyle.OPTION_STYLE_SATELLITE:
             return be_satellite.be_satelitte_b64
         elif self._dark_mode:
             return be_black.be_black_b64

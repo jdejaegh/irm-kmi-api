@@ -40,6 +40,14 @@ class IrmKmiConditionEvol(Enum):
     ONE_WAY = 'one_way'
     TWO_WAYS = 'two_ways'
     STABLE = 'stable'
+    
+class IrmKmiRadarStyle(Enum):
+    """Possible style for the rain radar"""
+
+    OPTION_STYLE_STD = 'standard_style'
+    OPTION_STYLE_CONTRAST = 'contrast_style'
+    OPTION_STYLE_YELLOW_RED = 'yellow_red_style'
+    OPTION_STYLE_SATELLITE = 'satellite_style'
 
 class IrmKmiForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
