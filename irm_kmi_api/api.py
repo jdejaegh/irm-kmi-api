@@ -12,7 +12,6 @@ from typing import Dict, List
 from zoneinfo import ZoneInfo
 
 import aiohttp
-import async_timeout
 
 from .pollen import PollenName, PollenLevel
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
@@ -125,7 +124,7 @@ class IrmKmiApiClient:
             headers['If-None-Match'] = self._cache[url]['etag']
 
         try:
-            async with async_timeout.timeout(60):
+            async with asyncio.timeout(60):
                 response = await self._session.request(
                     method=method,
                     url=url,
