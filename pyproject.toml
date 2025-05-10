@@ -24,6 +24,9 @@ requires-python = ">=3.12"
 [project.urls]
 Homepage = "https://github.com/jdejaegh/irm-kmi-api"
 
+[tool.setuptools]
+packages = ["irm_kmi_api"]
+
 [tool.bumpver]
 current_version = "0.1.6"
 version_pattern = "MAJOR.MINOR.PATCH"
