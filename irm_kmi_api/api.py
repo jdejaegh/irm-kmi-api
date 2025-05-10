@@ -8,18 +8,30 @@ import time
 import urllib.parse
 from datetime import datetime, timedelta
 from statistics import mean
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from zoneinfo import ZoneInfo
 
 import aiohttp
 
-from .pollen import PollenName, PollenLevel
+from .const import (
+    IRM_KMI_TO_HA_CONDITION_MAP,
+    STYLE_TO_PARAM_MAP,
+    WEEKDAYS,
+    WWEVOL_TO_ENUM_MAP,
+)
 from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
-from .const import STYLE_TO_PARAM_MAP, WEEKDAYS, WWEVOL_TO_ENUM_MAP
-from .data import (AnimationFrameData, CurrentWeatherData, ExtendedForecast,
-                   Forecast, RadarAnimationData, RadarForecast, RadarStyle,
-                   WarningData, WarningType)
-from .pollen import PollenParser
+from .data import (
+    AnimationFrameData,
+    CurrentWeatherData,
+    ExtendedForecast,
+    Forecast,
+    RadarAnimationData,
+    RadarForecast,
+    RadarStyle,
+    WarningData,
+    WarningType,
+)
+from .pollen import PollenLevel, PollenName, PollenParser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,10 +49,16 @@ class IrmKmiApiClient:
     COORD_DECIMALS = 6
     _cache_max_age = 60 * 60 * 2  # Remove items from the cache if they have not been hit since 2 hours
     _cache = {}
+    _base_url = "https://app.meteo.be/services/appv4/"
 
     def __init__(self, session: aiohttp.ClientSession, user_agent: str) -> None:
+        """
+        Create a new instance of the API client
+
+        :param session: aiohttp.ClientSession to use for the request
+        :param user_agent: string that will indentify your application in the User-Agent header of the HTTP requests
+        """
         self._session = session
-        self._base_url = "https://app.meteo.be/services/appv4/"
         self._user_agent = user_agent
 
     async def get_forecasts_coord(self, coord: Dict[str, float | int]) -> dict:
@@ -163,10 +181,20 @@ class IrmKmiApiClient:
 class IrmKmiApiClientHa(IrmKmiApiClient):
     """API client for IRM KMI weather data with additional methods to integrate easily with Home Assistant"""
 
-    def __init__(self, session: aiohttp.ClientSession, user_agent: str, cdt_map: dict) -> None:
+    def __init__(self, session: aiohttp.ClientSession, user_agent: str, cdt_map: Dict[Tuple[int, str], str] | None = None) -> None:
+        """
+        Create a new instance of the API client.  This client has more methods to integrate easily with Home Assistant
+
+        :param session: aiohttp.ClientSession to use for the request
+        :param user_agent: string that will indentify your application in the User-Agent header of the HTTP requests
+        :param cdt_map: mapping of weather conditions returned by the API and string that should be used when calling the
+                    methods. See the wiki for more information on what conditions are possible:
+                    https://github.com/jdejaegh/irm-kmi-api/wiki/API-documentation#obs-key (Table with icons matching).
+                    Example: cdt_map = { (0, 'd'): 'sunny', (0, 'n'): 'clear_night' }
+        """
         super().__init__(session, user_agent)
         self._api_data = dict()
-        self._cdt_map = cdt_map
+        self._cdt_map = cdt_map if cdt_map is not None else IRM_KMI_TO_HA_CONDITION_MAP
 
     async def refresh_forecasts_coord(self, coord: Dict[str, float | int]) -> None:
         """

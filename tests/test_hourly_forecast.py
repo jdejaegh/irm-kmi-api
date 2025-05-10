@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from irm_kmi_api import Forecast
 from tests.conftest import get_api_with_data
-from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
+from irm_kmi_api.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
 
 
 @freeze_time(datetime.fromisoformat('2023-12-26T18:30:00+01:00'))
