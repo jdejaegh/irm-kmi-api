@@ -1,6 +1,6 @@
 # Async API to retrieve data from the Belgian IRM KMI in Python
 
-The package exposes the data from the [mobile application of the Belgian IRM KMI](https://www.meteo.be/en/info/faq/products-services/the-rmi-weather-app) as a python module. 
+The package exposes the data from the [mobile application of the Belgian IRM KMI](https://www.meteo.be/en/info/faq/products-services/the-rmi-weather-app) as a Python module. 
 
 See more information in the wiki: https://github.com/jdejaegh/irm-kmi-api/wiki
 
@@ -14,14 +14,15 @@ from irm_kmi_api import IrmKmiApiClientHa
 
 async def print_weather():
     session = aiohttp.ClientSession()
-    client = IrmKmiApiClientHa(session=session, user_agent="jdejaegh/irm-kmi-api README example", cdt_map={})
+    client = IrmKmiApiClientHa(session=session, user_agent="jdejaegh/irm-kmi-api README example")
     await client.refresh_forecasts_coord({'lat': 50.47, 'long': 4.87})
     await session.close()
-    
+
     weather = client.get_current_weather(tz=ZoneInfo('Europe/Brussels'))
     city = client.get_city()
-    
+
     print(f"{weather['temperature']}°C with wind of {weather['wind_speed']} km/h in {city}")
+
 
 if __name__ == '__main__':
     asyncio.run(print_weather())
