@@ -20,6 +20,7 @@ from .data import (
 )
 from .pollen import PollenParser
 from .rain_graph import RainGraph
+from . import resources
 
 __all__ = [
     "IrmKmiApiClient",
@@ -39,7 +40,8 @@ __all__ = [
     "WarningData",
     "WarningType",
     "PollenParser",
-    "RainGraph"
+    "RainGraph",
+    "resources"
 ]
 
 __version__ = '1.0.0'
