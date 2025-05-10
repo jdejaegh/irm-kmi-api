@@ -8,18 +8,30 @@ import time
 import urllib.parse
 from datetime import datetime, timedelta
 from statistics import mean
-from typing import List, Dict
+from typing import Dict, List, Tuple
 from zoneinfo import ZoneInfo
 
 import aiohttp
-import async_timeout
 
-from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP, WWEVOL_TO_ENUM_MAP
-from .const import STYLE_TO_PARAM_MAP, WEEKDAYS
-from .data import (AnimationFrameData, CurrentWeatherData, Forecast,
-                   IrmKmiForecast, IrmKmiRadarForecast, RadarAnimationData,
-                   WarningData)
-from .pollen import PollenParser
+from .const import (
+    IRM_KMI_TO_HA_CONDITION_MAP,
+    STYLE_TO_PARAM_MAP,
+    WEEKDAYS,
+    WWEVOL_TO_ENUM_MAP,
+)
+from .const import MAP_WARNING_ID_TO_SLUG as SLUG_MAP
+from .data import (
+    AnimationFrameData,
+    CurrentWeatherData,
+    ExtendedForecast,
+    Forecast,
+    RadarAnimationData,
+    RadarForecast,
+    RadarStyle,
+    WarningData,
+    WarningType,
+)
+from .pollen import PollenLevel, PollenName, PollenParser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,19 +44,21 @@ class IrmKmiApiCommunicationError(IrmKmiApiError):
     """Exception to indicate a communication error."""
 
 
-class IrmKmiApiParametersError(IrmKmiApiError):
-    """Exception to indicate a parameter error."""
-
-
 class IrmKmiApiClient:
     """API client for IRM KMI weather data"""
     COORD_DECIMALS = 6
     _cache_max_age = 60 * 60 * 2  # Remove items from the cache if they have not been hit since 2 hours
     _cache = {}
+    _base_url = "https://app.meteo.be/services/appv4/"
 
     def __init__(self, session: aiohttp.ClientSession, user_agent: str) -> None:
+        """
+        Create a new instance of the API client
+
+        :param session: aiohttp.ClientSession to use for the request
+        :param user_agent: string that will indentify your application in the User-Agent header of the HTTP requests
+        """
         self._session = session
-        self._base_url = "https://app.meteo.be/services/appv4/"
         self._user_agent = user_agent
 
     async def get_forecasts_coord(self, coord: Dict[str, float | int]) -> dict:
@@ -128,7 +142,7 @@ class IrmKmiApiClient:
             headers['If-None-Match'] = self._cache[url]['etag']
 
         try:
-            async with async_timeout.timeout(60):
+            async with asyncio.timeout(60):
                 response = await self._session.request(
                     method=method,
                     url=url,
@@ -167,10 +181,20 @@ class IrmKmiApiClient:
 class IrmKmiApiClientHa(IrmKmiApiClient):
     """API client for IRM KMI weather data with additional methods to integrate easily with Home Assistant"""
 
-    def __init__(self, session: aiohttp.ClientSession, user_agent: str, cdt_map: dict) -> None:
+    def __init__(self, session: aiohttp.ClientSession, user_agent: str, cdt_map: Dict[Tuple[int, str], str] | None = None) -> None:
+        """
+        Create a new instance of the API client.  This client has more methods to integrate easily with Home Assistant
+
+        :param session: aiohttp.ClientSession to use for the request
+        :param user_agent: string that will indentify your application in the User-Agent header of the HTTP requests
+        :param cdt_map: mapping of weather conditions returned by the API and string that should be used when calling the
+                    methods. See the wiki for more information on what conditions are possible:
+                    https://github.com/jdejaegh/irm-kmi-api/wiki/API-documentation#obs-key (Table with icons matching).
+                    Example: cdt_map = { (0, 'd'): 'sunny', (0, 'n'): 'clear_night' }
+        """
         super().__init__(session, user_agent)
         self._api_data = dict()
-        self._cdt_map = cdt_map
+        self._cdt_map = cdt_map if cdt_map is not None else IRM_KMI_TO_HA_CONDITION_MAP
 
     async def refresh_forecasts_coord(self, coord: Dict[str, float | int]) -> None:
         """
@@ -254,7 +278,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return current_weather
 
-    def get_radar_forecast(self) -> List[IrmKmiRadarForecast]:
+    def get_radar_forecast(self) -> List[RadarForecast]:
         """
         Create a list of short term forecasts for rain based on the data provided by the rain radar
 
@@ -276,7 +300,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         forecast = list()
         for f in sequence:
             forecast.append(
-                IrmKmiRadarForecast(
+                RadarForecast(
                     datetime=f.get("time"),
                     native_precipitation=f.get('value'),
                     rain_forecast_max=round(f.get('positionHigher') * ratio, 2),
@@ -344,7 +368,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[IrmKmiForecast]:
+    def get_daily_forecast(self, tz: ZoneInfo, lang: str) -> List[ExtendedForecast]:
         """
         Parse the API data we currently have to build the daily forecast list.
 
@@ -416,7 +440,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                 except (TypeError, ValueError):
                     pass
 
-            forecast = IrmKmiForecast(
+            forecast = ExtendedForecast(
                 datetime=(forecast_day.strftime('%Y-%m-%d')),
                 condition=self._cdt_map.get((f.get('ww1', None), f.get('dayNight', None)), None),
                 condition_2=self._cdt_map.get((f.get('ww2', None), f.get('dayNight', None)), None),
@@ -444,7 +468,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return forecasts
 
-    def get_animation_data(self, tz: ZoneInfo, lang: str, style: str, dark_mode: bool) -> RadarAnimationData:
+    def get_animation_data(self, tz: ZoneInfo, lang: str, style: RadarStyle, dark_mode: bool) -> RadarAnimationData:
         """
         Get all the image URLs and create the radar animation data object.
 
@@ -525,7 +549,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
             result.append(
                 WarningData(
-                    slug=SLUG_MAP.get(warning_id, 'unknown'),
+                    slug=SLUG_MAP.get(warning_id, WarningType.UNKNOWN),
                     id=warning_id,
                     level=level,
                     friendly_name=data.get('warningType', {}).get('name', {}).get(lang, ''),
@@ -537,7 +561,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         return result if len(result) > 0 else []
 
-    async def get_pollen(self) -> Dict[str, str | None]:
+    async def get_pollen(self) -> Dict[PollenName, PollenLevel | None]:
         """
         Get SVG pollen info from the API, return the pollen data dict
 

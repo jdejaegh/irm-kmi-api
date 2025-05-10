@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 from unittest.mock import MagicMock
 
-from irm_kmi_api.api import IrmKmiApiClientHa
-from tests.const import IRM_KMI_TO_HA_CONDITION_MAP
+from irm_kmi_api import IrmKmiApiClientHa
+from irm_kmi_api.const import IRM_KMI_TO_HA_CONDITION_MAP
 
 
 def load_fixture(fixture):

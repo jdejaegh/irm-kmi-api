@@ -4,9 +4,9 @@ from zoneinfo import ZoneInfo
 import pytest
 from freezegun import freeze_time
 
-from irm_kmi_api.data import CurrentWeatherData
+from irm_kmi_api import CurrentWeatherData
 from tests.conftest import get_api_data, get_api_with_data
-from tests.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY
+from irm_kmi_api.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY
 
 
 @freeze_time(datetime.fromisoformat('2023-12-26T17:30:00+00:00'))

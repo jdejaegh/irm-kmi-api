@@ -6,14 +6,12 @@ import datetime
 import logging
 from typing import List, Self
 
-import async_timeout
 from svgwrite import Drawing
 from svgwrite.animate import Animate
 from svgwrite.container import FONT_TEMPLATE
 
 from .api import IrmKmiApiClient, IrmKmiApiError
-from .const import OPTION_STYLE_SATELLITE
-from .data import AnimationFrameData, RadarAnimationData
+from .data import AnimationFrameData, RadarAnimationData, RadarStyle
 from .resources import be_black, be_satellite, be_white, nl, roboto
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +23,7 @@ class RainGraph:
     def __init__(self,
                  animation_data: RadarAnimationData,
                  country: str,
-                 style: str,
+                 style: RadarStyle,
                  dark_mode: bool = False,
                  tz: datetime.tzinfo = None,
                  svg_width: float = 640,
@@ -150,7 +148,7 @@ class RainGraph:
         """
         return self._animation_data.get('hint', '')
 
-    async def _download_clouds(self, idx=None):
+    async def _download_clouds(self, idx: int | None = None):
         """
         Download cloud images and save the result in the internal state.
 
@@ -187,7 +185,7 @@ class RainGraph:
 
         for url in urls:
             coroutines.append(self._api_client.get_image(url))
-        async with async_timeout.timeout(60):
+        async with asyncio.timeout(60):
             images_from_api = await asyncio.gather(*coroutines)
 
         _LOGGER.info(f"Just downloaded {len(images_from_api)} images")
@@ -432,7 +430,7 @@ class RainGraph:
     def _get_background_png_b64(self) -> str:
         if self._country == 'NL':
             return nl.nl_b64
-        elif self._style == OPTION_STYLE_SATELLITE:
+        elif self._style == RadarStyle.OPTION_STYLE_SATELLITE:
             return be_satellite.be_satelitte_b64
         elif self._dark_mode:
             return be_black.be_black_b64

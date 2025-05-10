@@ -1,3 +1,2 @@
-aiohttp>=3.11.0
-async-timeout>=4.0.3
-svgwrite>=1.4.3
+aiohttp>=3.11.0,<4.0.0
+svgwrite>=1.4.3,<2.0.0

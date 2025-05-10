@@ -36,16 +36,65 @@ class Forecast(TypedDict, total=False):
     is_daytime: bool | None  # Mandatory to use with forecast_twice_daily
 
 
-class IrmKmiConditionEvol(Enum):
+class ConditionEvol(Enum):
+    """Possible state for evolution between weather conditions"""
+
     ONE_WAY = 'one_way'
     TWO_WAYS = 'two_ways'
     STABLE = 'stable'
 
-class IrmKmiForecast(Forecast, total=False):
+
+class RadarStyle(Enum):
+    """Possible style for the rain radar"""
+
+    OPTION_STYLE_STD = 'standard_style'
+    OPTION_STYLE_CONTRAST = 'contrast_style'
+    OPTION_STYLE_YELLOW_RED = 'yellow_red_style'
+    OPTION_STYLE_SATELLITE = 'satellite_style'
+
+
+class PollenName(Enum):
+    ALDER = 'alder'
+    ASH = 'ash'
+    BIRCH = 'birch'
+    GRASSES = 'grasses'
+    HAZEL = 'hazel'
+    MUGWORT = 'mugwort'
+    OAK = 'oak'
+
+
+class PollenLevel(Enum):
+    """Possible pollen levels"""
+
+    NONE = 'none'
+    ACTIVE = 'active'
+    GREEN = 'green'
+    YELLOW = 'yellow'
+    ORANGE = 'orange'
+    RED = 'red'
+    PURPLE = 'purple'
+
+class WarningType(Enum):
+    """Possible warning types"""
+
+    COLD = 'cold'
+    COLDSPELL = 'coldspell'
+    FOG = 'fog'
+    ICE_OR_SNOW = 'ice_or_snow'
+    RAIN = 'rain'
+    STORM_SURGE = 'storm_surge'
+    THUNDER = 'thunder'
+    THUNDERSTORM_LARGE_RAINFALL = 'thunderstorm_large_rainfall'
+    THUNDERSTORM_STRONG_GUSTS = 'thunderstorm_strong_gusts'
+    THUNDER_WIND_RAIN = 'thunder_wind_rain'
+    WIND = 'wind'
+    UNKNOWN = 'unknown'
+
+class ExtendedForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""
 
     condition_2: str | None
-    condition_evol: IrmKmiConditionEvol | None
+    condition_evol: ConditionEvol | None
     text: str | None
     sunrise: str | None
     sunset: str | None
@@ -53,6 +102,7 @@ class IrmKmiForecast(Forecast, total=False):
 
 class CurrentWeatherData(TypedDict, total=False):
     """Class to hold the currently observable weather at a given location"""
+
     condition: str | None
     temperature: float | None
     wind_speed: float | None
@@ -64,7 +114,8 @@ class CurrentWeatherData(TypedDict, total=False):
 
 class WarningData(TypedDict, total=False):
     """Holds data about a specific warning"""
-    slug: str
+
+    slug: WarningType
     id: int
     level: int
     friendly_name: str
@@ -73,8 +124,9 @@ class WarningData(TypedDict, total=False):
     ends_at: datetime
 
 
-class IrmKmiRadarForecast(Forecast):
+class RadarForecast(Forecast):
     """Forecast class to handle rain forecast from the IRM KMI rain radar"""
+
     rain_forecast_max: float
     rain_forecast_min: float
     might_rain: bool
@@ -83,6 +135,7 @@ class IrmKmiRadarForecast(Forecast):
 
 class AnimationFrameData(TypedDict, total=False):
     """Holds one single frame of the radar camera, along with the timestamp of the frame"""
+
     time: datetime | None
     image: bytes | str | None
     value: float | None
@@ -93,6 +146,7 @@ class AnimationFrameData(TypedDict, total=False):
 
 class RadarAnimationData(TypedDict, total=False):
     """Holds frames and additional data for the animation to be rendered"""
+
     sequence: List[AnimationFrameData] | None
     most_recent_image_idx: int | None
     hint: str | None

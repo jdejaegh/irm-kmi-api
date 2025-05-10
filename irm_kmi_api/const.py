@@ -1,39 +1,116 @@
 from typing import Final
 
-from irm_kmi_api.data import IrmKmiConditionEvol
+from .data import ConditionEvol, PollenLevel, RadarStyle, WarningType
 
-POLLEN_NAMES: Final = {'Alder', 'Ash', 'Birch', 'Grasses', 'Hazel', 'Mugwort', 'Oak'}
-POLLEN_LEVEL_TO_COLOR = {'null': 'green', 'low': 'yellow', 'moderate': 'orange', 'high': 'red', 'very high': 'purple',
-                         'active': 'active'}
+POLLEN_LEVEL_TO_COLOR = {
+    'null': PollenLevel.GREEN,
+    'low': PollenLevel.YELLOW,
+    'moderate': PollenLevel.ORANGE,
+    'high': PollenLevel.RED,
+    'very high': PollenLevel.PURPLE,
+    'active': PollenLevel.ACTIVE
+}
+
 WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-# TODO move those to an Enum
-OPTION_STYLE_STD: Final = 'standard_style'
-OPTION_STYLE_CONTRAST: Final = 'contrast_style'
-OPTION_STYLE_YELLOW_RED: Final = 'yellow_red_style'
-OPTION_STYLE_SATELLITE: Final = 'satellite_style'
 STYLE_TO_PARAM_MAP: Final = {
-    OPTION_STYLE_STD: 1,
-    OPTION_STYLE_CONTRAST: 2,
-    OPTION_STYLE_YELLOW_RED: 3,
-    OPTION_STYLE_SATELLITE: 4
+    RadarStyle.OPTION_STYLE_STD: 1,
+    RadarStyle.OPTION_STYLE_CONTRAST: 2,
+    RadarStyle.OPTION_STYLE_YELLOW_RED: 3,
+    RadarStyle.OPTION_STYLE_SATELLITE: 4
 }
 
 MAP_WARNING_ID_TO_SLUG: Final = {
-    0: 'wind',
-    1: 'rain',
-    2: 'ice_or_snow',
-    3: 'thunder',
-    7: 'fog',
-    9: 'cold',
-    12: 'thunder_wind_rain',
-    13: 'thunderstorm_strong_gusts',
-    14: 'thunderstorm_large_rainfall',
-    15: 'storm_surge',
-    17: 'coldspell'}
+    0: WarningType.WIND,
+    1: WarningType.RAIN,
+    2: WarningType.ICE_OR_SNOW,
+    3: WarningType.THUNDER,
+    7: WarningType.FOG,
+    9: WarningType.COLD,
+    12: WarningType.THUNDER_WIND_RAIN,
+    13: WarningType.THUNDERSTORM_STRONG_GUSTS,
+    14: WarningType.THUNDERSTORM_LARGE_RAINFALL,
+    15: WarningType.STORM_SURGE,
+    17: WarningType.COLDSPELL
+}
 
 WWEVOL_TO_ENUM_MAP: Final = {
-    None: IrmKmiConditionEvol.STABLE,
-    0: IrmKmiConditionEvol.ONE_WAY,
-    1: IrmKmiConditionEvol.TWO_WAYS
+    None: ConditionEvol.STABLE,
+    0: ConditionEvol.ONE_WAY,
+    1: ConditionEvol.TWO_WAYS
+}
+
+ATTR_CONDITION_CLEAR_NIGHT = "clear-night"
+ATTR_CONDITION_CLOUDY = "cloudy"
+ATTR_CONDITION_EXCEPTIONAL = "exceptional"
+ATTR_CONDITION_FOG = "fog"
+ATTR_CONDITION_HAIL = "hail"
+ATTR_CONDITION_LIGHTNING = "lightning"
+ATTR_CONDITION_LIGHTNING_RAINY = "lightning-rainy"
+ATTR_CONDITION_PARTLYCLOUDY = "partlycloudy"
+ATTR_CONDITION_POURING = "pouring"
+ATTR_CONDITION_RAINY = "rainy"
+ATTR_CONDITION_SNOWY = "snowy"
+ATTR_CONDITION_SNOWY_RAINY = "snowy-rainy"
+ATTR_CONDITION_SUNNY = "sunny"
+ATTR_CONDITION_WINDY = "windy"
+ATTR_CONDITION_WINDY_VARIANT = "windy-variant"
+
+IRM_KMI_TO_HA_CONDITION_MAP: Final = {
+    (0, 'd'): ATTR_CONDITION_SUNNY,
+    (0, 'n'): ATTR_CONDITION_CLEAR_NIGHT,
+    (1, 'd'): ATTR_CONDITION_SUNNY,
+    (1, 'n'): ATTR_CONDITION_CLEAR_NIGHT,
+    (2, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (2, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (3, 'd'): ATTR_CONDITION_PARTLYCLOUDY,
+    (3, 'n'): ATTR_CONDITION_PARTLYCLOUDY,
+    (4, 'd'): ATTR_CONDITION_POURING,
+    (4, 'n'): ATTR_CONDITION_POURING,
+    (5, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (5, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (6, 'd'): ATTR_CONDITION_POURING,
+    (6, 'n'): ATTR_CONDITION_POURING,
+    (7, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (7, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (8, 'd'): ATTR_CONDITION_SNOWY_RAINY,
+    (8, 'n'): ATTR_CONDITION_SNOWY_RAINY,
+    (9, 'd'): ATTR_CONDITION_SNOWY_RAINY,
+    (9, 'n'): ATTR_CONDITION_SNOWY_RAINY,
+    (10, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (10, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (11, 'd'): ATTR_CONDITION_SNOWY,
+    (11, 'n'): ATTR_CONDITION_SNOWY,
+    (12, 'd'): ATTR_CONDITION_SNOWY,
+    (12, 'n'): ATTR_CONDITION_SNOWY,
+    (13, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (13, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (14, 'd'): ATTR_CONDITION_CLOUDY,
+    (14, 'n'): ATTR_CONDITION_CLOUDY,
+    (15, 'd'): ATTR_CONDITION_CLOUDY,
+    (15, 'n'): ATTR_CONDITION_CLOUDY,
+    (16, 'd'): ATTR_CONDITION_POURING,
+    (16, 'n'): ATTR_CONDITION_POURING,
+    (17, 'd'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (17, 'n'): ATTR_CONDITION_LIGHTNING_RAINY,
+    (18, 'd'): ATTR_CONDITION_RAINY,
+    (18, 'n'): ATTR_CONDITION_RAINY,
+    (19, 'd'): ATTR_CONDITION_POURING,
+    (19, 'n'): ATTR_CONDITION_POURING,
+    (20, 'd'): ATTR_CONDITION_SNOWY_RAINY,
+    (20, 'n'): ATTR_CONDITION_SNOWY_RAINY,
+    (21, 'd'): ATTR_CONDITION_RAINY,
+    (21, 'n'): ATTR_CONDITION_RAINY,
+    (22, 'd'): ATTR_CONDITION_SNOWY,
+    (22, 'n'): ATTR_CONDITION_SNOWY,
+    (23, 'd'): ATTR_CONDITION_SNOWY,
+    (23, 'n'): ATTR_CONDITION_SNOWY,
+    (24, 'd'): ATTR_CONDITION_FOG,
+    (24, 'n'): ATTR_CONDITION_FOG,
+    (25, 'd'): ATTR_CONDITION_FOG,
+    (25, 'n'): ATTR_CONDITION_FOG,
+    (26, 'd'): ATTR_CONDITION_FOG,
+    (26, 'n'): ATTR_CONDITION_FOG,
+    (27, 'd'): ATTR_CONDITION_FOG,
+    (27, 'n'): ATTR_CONDITION_FOG
 }

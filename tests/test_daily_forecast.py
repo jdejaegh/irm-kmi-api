@@ -3,9 +3,9 @@ from zoneinfo import ZoneInfo
 
 from freezegun import freeze_time
 
-from irm_kmi_api.data import IrmKmiForecast, IrmKmiConditionEvol
+from irm_kmi_api import ConditionEvol, ExtendedForecast
 from tests.conftest import get_api_with_data
-from tests.const import ATTR_CONDITION_PARTLYCLOUDY
+from irm_kmi_api.const import ATTR_CONDITION_PARTLYCLOUDY
 
 
 @freeze_time(datetime.fromisoformat('2023-12-26T18:30:00+01:00'))
@@ -19,11 +19,11 @@ async def test_daily_forecast() -> None:
     assert len(result) == 8
     assert result[0]['datetime'] == '2023-12-26'
     assert not result[0]['is_daytime']
-    expected = IrmKmiForecast(
+    expected = ExtendedForecast(
         datetime='2023-12-27',
         condition=ATTR_CONDITION_PARTLYCLOUDY,
         condition_2=None,
-        condition_evol=IrmKmiConditionEvol.TWO_WAYS,
+        condition_evol=ConditionEvol.TWO_WAYS,
         native_precipitation=0,
         native_temperature=9,
         native_templow=4,

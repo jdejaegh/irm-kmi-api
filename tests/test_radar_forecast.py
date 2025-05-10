@@ -1,6 +1,6 @@
 import pytest
 
-from irm_kmi_api.data import IrmKmiRadarForecast
+from irm_kmi_api import RadarForecast
 from tests.conftest import get_api_with_data
 
 
@@ -9,28 +9,28 @@ def test_radar_forecast() -> None:
     result = api.get_radar_forecast()
 
     expected = [
-        IrmKmiRadarForecast(datetime="2023-12-26T17:00:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T17:10:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T17:20:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T17:30:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T17:40:00+01:00", native_precipitation=0.1, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T17:50:00+01:00", native_precipitation=0.01, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T18:00:00+01:00", native_precipitation=0.12, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T18:10:00+01:00", native_precipitation=1.2, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T18:20:00+01:00", native_precipitation=2, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T18:30:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
-        IrmKmiRadarForecast(datetime="2023-12-26T18:40:00+01:00", native_precipitation=0, might_rain=False,
-                            rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min')
+        RadarForecast(datetime="2023-12-26T17:00:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T17:10:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T17:20:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T17:30:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T17:40:00+01:00", native_precipitation=0.1, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T17:50:00+01:00", native_precipitation=0.01, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T18:00:00+01:00", native_precipitation=0.12, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T18:10:00+01:00", native_precipitation=1.2, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T18:20:00+01:00", native_precipitation=2, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T18:30:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min'),
+        RadarForecast(datetime="2023-12-26T18:40:00+01:00", native_precipitation=0, might_rain=False,
+                      rain_forecast_max=0, rain_forecast_min=0, unit='mm/10min')
     ]
 
     assert expected == result
@@ -40,7 +40,7 @@ def test_radar_forecast_rain_interval() -> None:
     api = get_api_with_data('forecast_with_rain_on_radar.json')
     result = api.get_radar_forecast()
 
-    _12 = IrmKmiRadarForecast(
+    _12 = RadarForecast(
         datetime='2024-05-30T18:00:00+02:00',
         native_precipitation=0.89,
         might_rain=True,
@@ -49,7 +49,7 @@ def test_radar_forecast_rain_interval() -> None:
         unit='mm/10min'
     )
 
-    _13 = IrmKmiRadarForecast(
+    _13 = RadarForecast(
         datetime="2024-05-30T18:10:00+02:00",
         native_precipitation=0.83,
         might_rain=True,
