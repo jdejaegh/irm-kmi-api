@@ -21,3 +21,15 @@ def get_api_with_data(fixture: str) -> IrmKmiApiClientHa:
     api = IrmKmiApiClientHa(session=MagicMock(), user_agent='', cdt_map=IRM_KMI_TO_HA_CONDITION_MAP)
     api._api_data = get_api_data(fixture)
     return api
+
+def is_serializable(x):
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
+def assert_all_serializable(elements: list):
+    for element in elements:
+        for v in element.values():
+            assert is_serializable(v)

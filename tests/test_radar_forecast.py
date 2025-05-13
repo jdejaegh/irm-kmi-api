@@ -1,7 +1,7 @@
 import pytest
 
 from irm_kmi_api import RadarForecast
-from tests.conftest import get_api_with_data
+from tests.conftest import get_api_with_data, assert_all_serializable
 
 
 def test_radar_forecast() -> None:
@@ -78,3 +78,10 @@ async def test_current_rainfall_unit(
 
     for r in radar_forecast:
         assert r.get('unit') == expected
+
+def test_radar_serializable() -> None:
+    api = get_api_with_data("forecast.json")
+
+    result = api.get_radar_forecast()
+
+    assert_all_serializable(result)

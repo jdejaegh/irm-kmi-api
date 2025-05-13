@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 from irm_kmi_api import PollenLevel, PollenName, PollenParser
-from tests.conftest import get_api_with_data, load_fixture
+from tests.conftest import get_api_with_data, load_fixture, is_serializable
 
 
 def test_svg_pollen_parsing():
@@ -76,3 +76,9 @@ async def test_pollen_data_from_api() -> None:
                 PollenName.HAZEL: PollenLevel.NONE}
     assert result == expected
 
+def test_pollen_is_serializable():
+    with open("tests/fixtures/pollens-2025.svg", "r") as file:
+        svg_data = file.read()
+    data = PollenParser(svg_data).get_pollen_data()
+
+    assert is_serializable(data)

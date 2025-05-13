@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from freezegun import freeze_time
 
 from irm_kmi_api import ConditionEvol, ExtendedForecast
-from tests.conftest import get_api_with_data
+from tests.conftest import get_api_with_data, assert_all_serializable
 from irm_kmi_api.const import ATTR_CONDITION_PARTLYCLOUDY
 
 
@@ -106,3 +106,11 @@ async def test_sunrise_sunset_be() -> None:
 
     assert result[2]['sunrise'] == '2023-12-28T08:45:00+01:00'
     assert result[2]['sunset'] == '2023-12-28T16:43:00+01:00'
+
+
+def test_daily_serializable() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+
+    result = api.get_daily_forecast(tz, 'fr')
+    assert_all_serializable(result)

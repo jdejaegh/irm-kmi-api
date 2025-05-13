@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from irm_kmi_api import CurrentWeatherData
-from tests.conftest import get_api_data, get_api_with_data
+from tests.conftest import get_api_data, get_api_with_data, is_serializable
 from irm_kmi_api.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_PARTLYCLOUDY
 
 
@@ -140,3 +140,10 @@ def test_current_weather_attributes(
         assert r == expected_
 
     run(sensor, expected)
+
+@freeze_time(datetime.fromisoformat('2023-12-26T17:30:00+00:00'))
+def test_current_weather_is_serializable() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+    result = api.get_current_weather(tz)
+    assert is_serializable(result)

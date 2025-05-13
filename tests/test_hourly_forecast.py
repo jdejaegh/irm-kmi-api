@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from freezegun import freeze_time
 
 from irm_kmi_api import Forecast
-from tests.conftest import get_api_with_data
+from tests.conftest import get_api_with_data, assert_all_serializable
 from irm_kmi_api.const import ATTR_CONDITION_CLOUDY, ATTR_CONDITION_RAINY
 
 
@@ -88,4 +88,10 @@ def test_hourly_forecast_midnight_bug() -> None:
 
     assert result[24]['datetime'] == '2024-06-01T00:00:00+02:00'
 
+def test_hourly_serializable() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
 
+    result = api.get_hourly_forecast(tz)
+
+    assert_all_serializable(result)

@@ -1,6 +1,6 @@
 """Data classes for IRM KMI integration"""
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import List, Required, TypedDict
 
 
@@ -36,7 +36,7 @@ class Forecast(TypedDict, total=False):
     is_daytime: bool | None  # Mandatory to use with forecast_twice_daily
 
 
-class ConditionEvol(Enum):
+class ConditionEvol(StrEnum):
     """Possible state for evolution between weather conditions"""
 
     ONE_WAY = 'one_way'
@@ -44,7 +44,7 @@ class ConditionEvol(Enum):
     STABLE = 'stable'
 
 
-class RadarStyle(Enum):
+class RadarStyle(StrEnum):
     """Possible style for the rain radar"""
 
     OPTION_STYLE_STD = 'standard_style'
@@ -53,7 +53,7 @@ class RadarStyle(Enum):
     OPTION_STYLE_SATELLITE = 'satellite_style'
 
 
-class PollenName(Enum):
+class PollenName(StrEnum):
     ALDER = 'alder'
     ASH = 'ash'
     BIRCH = 'birch'
@@ -63,7 +63,7 @@ class PollenName(Enum):
     OAK = 'oak'
 
 
-class PollenLevel(Enum):
+class PollenLevel(StrEnum):
     """Possible pollen levels"""
 
     NONE = 'none'
@@ -74,7 +74,7 @@ class PollenLevel(Enum):
     RED = 'red'
     PURPLE = 'purple'
 
-class WarningType(Enum):
+class WarningType(StrEnum):
     """Possible warning types"""
 
     COLD = 'cold'
