@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "irm-kmi-api"
-version = "1.0.2"
+version = "1.0.3"
 description = "Retrieve data from the Belgian IRM KMI in Python"
 readme = "README.md"
 authors = [{ name = "Jules Dejaeghere", email = "curable.grass491@mailer.me" }]
@@ -28,7 +28,7 @@ Homepage = "https://github.com/jdejaegh/irm-kmi-api"
 packages = ["irm_kmi_api", "irm_kmi_api.resources"]
 
 [tool.bumpver]
-current_version = "1.0.2"
+current_version = "1.0.3"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
