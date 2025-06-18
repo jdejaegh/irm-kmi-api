@@ -80,6 +80,7 @@ class WarningType(StrEnum):
     COLD = 'cold'
     COLDSPELL = 'coldspell'
     FOG = 'fog'
+    HEAT = 'heat'
     ICE_OR_SNOW = 'ice_or_snow'
     RAIN = 'rain'
     STORM_SURGE = 'storm_surge'
