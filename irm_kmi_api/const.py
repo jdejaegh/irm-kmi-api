@@ -27,6 +27,7 @@ MAP_WARNING_ID_TO_SLUG: Final = {
     3: WarningType.THUNDER,
     7: WarningType.FOG,
     9: WarningType.COLD,
+    10: WarningType.HEAT,
     12: WarningType.THUNDER_WIND_RAIN,
     13: WarningType.THUNDERSTORM_STRONG_GUSTS,
     14: WarningType.THUNDERSTORM_LARGE_RAINFALL,
