@@ -26,6 +26,7 @@ MAP_WARNING_ID_TO_SLUG: Final = {
     3: 'thunder',
     7: 'fog',
     9: 'cold',
+    10: 'heat',
     12: 'thunder_wind_rain',
     13: 'thunderstorm_strong_gusts',
     14: 'thunderstorm_large_rainfall',

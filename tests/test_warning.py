@@ -22,3 +22,18 @@ async def test_warning_data() -> None:
     assert first.get('friendly_name') == 'Fog'
     assert first.get('id') == 7
     assert first.get('level') == 1
+
+async def test_warning_heat() -> None:
+    api = get_api_with_data("antwerp_with_heat_warning.json")
+
+    result = api.get_warnings(lang='en')
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+
+    first = result[0]
+
+    assert first.get('slug') == 'heat'
+    assert first.get('friendly_name') == 'Heat'
+    assert first.get('id') == 10
+    assert first.get('level') == 1
