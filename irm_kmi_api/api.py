@@ -238,7 +238,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
 
         now_hourly = self._get_now_hourly(tz)
         uv_index = self._get_uv_index()
-        print("now_hourly", now_hourly)
+
         try:
             pressure = (
                 float(now_hourly.get("pressure", None))
@@ -256,7 +256,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             )
         except (TypeError, ValueError):
             wind_speed = None
-        print("wind_speed", wind_speed)
+
         try:
             wind_gust_speed = (
                 float(now_hourly.get("windPeakSpeedKm", None))
