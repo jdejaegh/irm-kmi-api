@@ -116,4 +116,3 @@ class PollenParser:
         if e.text is not None:
             return e.text.strip()
         return None
-

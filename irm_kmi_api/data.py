@@ -74,6 +74,7 @@ class PollenLevel(StrEnum):
     RED = 'red'
     PURPLE = 'purple'
 
+
 class WarningType(StrEnum):
     """Possible warning types"""
 
@@ -90,6 +91,7 @@ class WarningType(StrEnum):
     THUNDER_WIND_RAIN = 'thunder_wind_rain'
     WIND = 'wind'
     UNKNOWN = 'unknown'
+
 
 class ExtendedForecast(Forecast, total=False):
     """Forecast class with additional attributes for IRM KMI"""

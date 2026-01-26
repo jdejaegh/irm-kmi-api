@@ -50,7 +50,7 @@ class IrmKmiApiClient:
 
     COORD_DECIMALS = 6
     _cache_max_age = (
-        60 * 60 * 2
+            60 * 60 * 2
     )  # Remove items from the cache if they have not been hit since 2 hours
     _cache = {}
     _base_url = "https://app.meteo.be/services/appv4/"
@@ -132,13 +132,13 @@ class IrmKmiApiClient:
         _LOGGER.info(f"Expired {len(keys_to_delete)} elements from API cache")
 
     async def _api_wrapper(
-        self,
-        params: dict,
-        base_url: str | None = None,
-        path: str = "",
-        method: str = "get",
-        data: dict | None = None,
-        headers: dict | None = None,
+            self,
+            params: dict,
+            base_url: str | None = None,
+            path: str = "",
+            method: str = "get",
+            data: dict | None = None,
+            headers: dict | None = None,
     ) -> bytes:
         """Get information from the API."""
         url = f"{self._base_url if base_url is None else base_url}{path}"
@@ -200,10 +200,10 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
     """API client for IRM KMI weather data with additional methods to integrate easily with Home Assistant"""
 
     def __init__(
-        self,
-        session: aiohttp.ClientSession,
-        user_agent: str,
-        cdt_map: Dict[Tuple[int, str], str] | None = None,
+            self,
+            session: aiohttp.ClientSession,
+            user_agent: str,
+            cdt_map: Dict[Tuple[int, str], str] | None = None,
     ) -> None:
         """
         Create a new instance of the API client.  This client has more methods to integrate easily with Home Assistant
@@ -308,15 +308,16 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                     "windSpeedKm"
                 )
             if (
-                self._api_data.get("obs", {}).get("windDirectionText", {}).get("en")
-                == "VAR"
+                    self._api_data.get("obs", {}).get("windDirectionText", {}).get("en")
+                    == "VAR"
             ):
                 current_weather["wind_bearing"] = None
             else:
                 try:
                     current_weather["wind_bearing"] = (
-                        float(self._api_data.get("obs", {}).get("windDirection")) + 180
-                    ) % 360
+                                                              float(self._api_data.get("obs", {}).get(
+                                                                  "windDirection")) + 180
+                                                      ) % 360
                 except (TypeError, ValueError):
                     pass
 
@@ -522,9 +523,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             )
             # Swap temperature and templow if needed
             if (
-                forecast["native_templow"] is not None
-                and forecast["native_temperature"] is not None
-                and forecast["native_templow"] > forecast["native_temperature"]
+                    forecast["native_templow"] is not None
+                    and forecast["native_temperature"] is not None
+                    and forecast["native_templow"] > forecast["native_temperature"]
             ):
                 (forecast["native_templow"], forecast["native_temperature"]) = (
                     forecast["native_temperature"],
@@ -536,7 +537,7 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         return forecasts
 
     def get_animation_data(
-        self, tz: ZoneInfo, lang: str, style: RadarStyle, dark_mode: bool
+            self, tz: ZoneInfo, lang: str, style: RadarStyle, dark_mode: bool
     ) -> RadarAnimationData:
         """
         Get all the image URLs and create the radar animation data object.
@@ -554,9 +555,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         country = self.get_country()
 
         if (
-            animation_data is None
-            or localisation_layer_url is None
-            or not isinstance(animation_data, list)
+                animation_data is None
+                or localisation_layer_url is None
+                or not isinstance(animation_data, list)
         ):
             raise ValueError("Cannot create animation data")
 
@@ -613,9 +614,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         """
         warning_data = self._api_data.get("for", {}).get("warning")
         if (
-            warning_data is None
-            or not isinstance(warning_data, list)
-            or len(warning_data) == 0
+                warning_data is None
+                or not isinstance(warning_data, list)
+                or len(warning_data) == 0
         ):
             return []
 
@@ -707,9 +708,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         hourly_forecast_data = self._api_data.get("for", {}).get("hourly")
         now = datetime.now(tz)
         if not (
-            hourly_forecast_data is None
-            or not isinstance(hourly_forecast_data, list)
-            or len(hourly_forecast_data) == 0
+                hourly_forecast_data is None
+                or not isinstance(hourly_forecast_data, list)
+                or len(hourly_forecast_data) == 0
         ):
             for current in hourly_forecast_data[:4]:
                 if now.strftime("%H") == current["hour"]:
