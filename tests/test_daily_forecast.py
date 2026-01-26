@@ -60,38 +60,38 @@ async def test_daily_forecast_midnight_bug() -> None:
     assert result[3]['is_daytime']
 
 
-@freeze_time("2024-06-09T13:40:00+00:00")
+@freeze_time("2026-01-25T14:13:29+01:00")
 async def test_datetime_daily_forecast_nl() -> None:
-    api = get_api_with_data("forecast_ams_no_ww.json")
+    api = get_api_with_data("forecast_ams_2026_01.json")
     tz = ZoneInfo("Europe/Brussels")
 
     result = api.get_daily_forecast(tz, 'en')
 
-    assert result[0]['datetime'] == '2024-06-09'
+    assert result[0]['datetime'] == '2026-01-25'
     assert result[0]['is_daytime']
 
-    assert result[1]['datetime'] == '2024-06-10'
+    assert result[1]['datetime'] == '2026-01-26'
     assert not result[1]['is_daytime']
 
-    assert result[2]['datetime'] == '2024-06-10'
+    assert result[2]['datetime'] == '2026-01-26'
     assert result[2]['is_daytime']
 
 
-@freeze_time("2024-06-09T13:40:00+00:00")
+@freeze_time("2026-01-25T14:13:29+01:00")
 async def test_sunrise_sunset_nl() -> None:
-    api = get_api_with_data("forecast_ams_no_ww.json")
+    api = get_api_with_data("forecast_ams_2026_01.json")
     tz = ZoneInfo("Europe/Brussels")
 
     result = api.get_daily_forecast(tz, 'en')
 
-    assert result[0]['sunrise'] == '2024-06-09T05:19:28+02:00'
-    assert result[0]['sunset'] == '2024-06-09T22:01:09+02:00'
+    assert result[0]['sunrise'] == '2026-01-25T08:29:52+01:00'
+    assert result[0]['sunset'] == '2026-01-25T17:16:24+01:00'
 
     assert result[1]['sunrise'] is None
     assert result[1]['sunset'] is None
 
-    assert result[2]['sunrise'] == '2024-06-10T05:19:08+02:00'
-    assert result[2]['sunset'] == '2024-06-10T22:01:53+02:00'
+    assert result[2]['sunrise'] == '2026-01-26T08:28:31+01:00'
+    assert result[2]['sunset'] == '2026-01-26T17:18:12+01:00'
 
 
 @freeze_time("2023-12-26T18:30:00+01:00")

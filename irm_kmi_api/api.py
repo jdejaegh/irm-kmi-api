@@ -237,6 +237,8 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         """
 
         now_hourly = self._get_now_hourly(tz)
+        if now_hourly is None:
+            now_hourly = dict()
         uv_index = self._get_uv_index()
 
         try:
@@ -284,11 +286,13 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         except (TypeError, ValueError):
             wind_bearing = None
 
+        day_night = self._api_data.get("obs", {}).get("dayNight", now_hourly.get("dayNight"))
+
         current_weather = CurrentWeatherData(
             condition=self._cdt_map.get(
                 (
                     self._api_data.get("obs", {}).get("ww"),
-                    self._api_data.get("obs", {}).get("dayNight"),
+                    day_night,
                 ),
                 None,
             ),
@@ -299,38 +303,6 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             pressure=pressure,
             uv_index=uv_index,
         )
-
-        # TODO this code should not be needed anymore as the 'obs' key does not contain the data anymore as of
-        #  January 2026.  It might be removed but test cases and fixtures should be adapted.
-        if self._api_data.get("country", "") == "NL":
-            if self._api_data.get("obs", {}).get("windSpeedKm") is not None:
-                current_weather["wind_speed"] = self._api_data.get("obs", {}).get(
-                    "windSpeedKm"
-                )
-            if (
-                    self._api_data.get("obs", {}).get("windDirectionText", {}).get("en")
-                    == "VAR"
-            ):
-                current_weather["wind_bearing"] = None
-            else:
-                try:
-                    current_weather["wind_bearing"] = (
-                                                              float(self._api_data.get("obs", {}).get(
-                                                                  "windDirection")) + 180
-                                                      ) % 360
-                except (TypeError, ValueError):
-                    pass
-
-        # Since June 2024, the NL weather does not include the condition in the 'ww' key, so we get it from the current
-        # hourly forecast instead if it is missing
-        # In January 2026, the 'ww' key is back in the observation so this code should not run anymore
-        if current_weather["condition"] is None:
-            try:
-                current_weather["condition"] = self._cdt_map.get(
-                    (int(now_hourly.get("ww")), now_hourly.get("dayNight")), None
-                )
-            except (TypeError, ValueError, AttributeError):
-                current_weather["condition"] = None
 
         return current_weather
 
