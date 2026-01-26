@@ -114,3 +114,14 @@ def test_daily_serializable() -> None:
 
     result = api.get_daily_forecast(tz, 'fr')
     assert_all_serializable(result)
+
+
+@freeze_time("2023-12-26T18:30:00+01:00")
+async def test_floats_are_floats() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+
+    result = api.get_daily_forecast(tz, 'en')
+    for f in result:
+        assert type(f["native_templow"]) is float
+        assert type(f["native_temperature"]) is float or f["native_temperature"] is None

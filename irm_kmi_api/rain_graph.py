@@ -4,7 +4,7 @@ import base64
 import copy
 import datetime
 import logging
-from typing import List, Self
+from typing import List, Self, Tuple
 
 from svgwrite import Drawing
 from svgwrite.animate import Animate
@@ -40,9 +40,9 @@ class RainGraph:
         self._country: str = country
 
         if self._country == 'NL':
-            self._background_size: (int, int) = (640, 600)
+            self._background_size: Tuple[int, int] = (640, 600)
         else:
-            self._background_size: (int, int) = (640, 490)
+            self._background_size: Tuple[int, int] = (640, 490)
 
         self._style = style
         self._dark_mode: bool = dark_mode

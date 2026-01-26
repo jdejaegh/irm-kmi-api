@@ -9,7 +9,7 @@ import time
 import urllib.parse
 from datetime import datetime, timedelta
 from statistics import mean
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from zoneinfo import ZoneInfo
 
 import aiohttp
@@ -36,6 +36,11 @@ from .pollen import PollenLevel, PollenName, PollenParser
 
 _LOGGER = logging.getLogger(__name__)
 
+def _float_or_none(v: Any) -> float | None:
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
 
 class IrmKmiApiError(Exception):
     """Exception to indicate a general API error."""
@@ -381,14 +386,14 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             forecast = Forecast(
                 datetime=day.isoformat(),
                 condition=self._cdt_map.get((ww, f.get("dayNight", None)), None),
-                native_precipitation=f.get("precipQuantity", None),
-                native_temperature=f.get("temp", None),
+                native_precipitation=_float_or_none(f.get("precipQuantity")),
+                native_temperature=_float_or_none(f.get("temp")),
                 native_templow=None,
-                native_wind_gust_speed=f.get("windPeakSpeedKm", None),
-                native_wind_speed=f.get("windSpeedKm", None),
+                native_wind_gust_speed=_float_or_none(f.get("windPeakSpeedKm")),
+                native_wind_speed=_float_or_none(f.get("windSpeedKm")),
                 precipitation_probability=precipitation_probability,
                 wind_bearing=wind_bearing,
-                native_pressure=f.get("pressure", None),
+                native_pressure=_float_or_none(f.get("pressure")),
                 is_daytime=f.get("dayNight", None) == "d",
             )
 
@@ -412,19 +417,6 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         forecast_day = datetime.now(tz)
 
         for idx, f in enumerate(data):
-            precipitation = None
-            if f.get("precipQuantity", None) is not None:
-                try:
-                    precipitation = float(f.get("precipQuantity"))
-                except (TypeError, ValueError):
-                    pass
-
-            native_wind_gust_speed = None
-            if f.get("wind", {}).get("peakSpeed") is not None:
-                try:
-                    native_wind_gust_speed = int(f.get("wind", {}).get("peakSpeed"))
-                except (TypeError, ValueError):
-                    pass
 
             wind_bearing = None
             if f.get("wind", {}).get("dirText", {}).get("en") != "VAR":
@@ -481,11 +473,11 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                     (f.get("ww2", None), f.get("dayNight", None)), None
                 ),
                 condition_evol=WWEVOL_TO_ENUM_MAP.get(f.get("wwevol"), None),
-                native_precipitation=precipitation,
-                native_temperature=f.get("tempMax", None),
-                native_templow=f.get("tempMin", None),
-                native_wind_gust_speed=native_wind_gust_speed,
-                native_wind_speed=f.get("wind", {}).get("speed"),
+                native_precipitation= _float_or_none(f.get("precipQuantity")),
+                native_temperature=_float_or_none(f.get("tempMax")),
+                native_templow=_float_or_none(f.get("tempMin")),
+                native_wind_gust_speed=_float_or_none(f.get("wind", {}).get("peakSpeed")),
+                native_wind_speed=_float_or_none(f.get("wind", {}).get("speed")),
                 precipitation_probability=f.get("precipChance", None),
                 wind_bearing=wind_bearing,
                 is_daytime=is_daytime,

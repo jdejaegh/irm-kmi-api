@@ -95,3 +95,16 @@ def test_hourly_serializable() -> None:
     result = api.get_hourly_forecast(tz)
 
     assert_all_serializable(result)
+
+
+@freeze_time(datetime.fromisoformat('2024-05-31T00:10:00+02:00'))
+def test_floats_are_floats() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+
+    result = api.get_hourly_forecast(tz)
+    for f in result:
+        assert type(f["native_temperature"]) is float or f["native_temperature"] is None
+        assert type(f["native_templow"]) is float or f["native_templow"] is None
+        assert type(f["native_pressure"]) is float
+        assert type(f["native_precipitation"]) is float

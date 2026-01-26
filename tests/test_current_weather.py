@@ -129,3 +129,14 @@ def test_current_weather_is_serializable() -> None:
     tz = ZoneInfo("Europe/Brussels")
     result = api.get_current_weather(tz)
     assert is_serializable(result)
+
+@freeze_time(datetime.fromisoformat("2023-12-26T17:30:00+00:00"))
+def test_floats_are_floats() -> None:
+    api = get_api_with_data("forecast.json")
+    tz = ZoneInfo("Europe/Brussels")
+    result = api.get_current_weather(tz)
+
+    assert type(result["temperature"]) is float
+    assert type(result["wind_speed"]) is float
+    assert type(result["uv_index"]) is float
+    assert type(result["pressure"]) is float
