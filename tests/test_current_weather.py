@@ -28,25 +28,6 @@ def test_current_weather_be() -> None:
     assert result == expected
 
 
-# @freeze_time(datetime.fromisoformat("2023-12-28T15:30:00"))
-# def test_current_weather_nl() -> None:
-#     api = get_api_with_data("forecast_nl.json")
-#     tz = ZoneInfo("Europe/Brussels")
-#     result = api.get_current_weather(tz)
-#
-#     expected = CurrentWeatherData(
-#         condition=ATTR_CONDITION_CLOUDY,
-#         temperature=11,
-#         wind_speed=40,
-#         wind_gust_speed=None,
-#         wind_bearing=225,
-#         pressure=1008,
-#         uv_index=1,
-#     )
-#
-#     assert expected == result
-
-
 @freeze_time("2026-01-25T14:13:29+01:00")
 def test_current_condition_forecast_nl() -> None:
     api = get_api_with_data("forecast_ams_2026_01.json")
