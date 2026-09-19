@@ -6,6 +6,8 @@ from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 from zoneinfo import ZoneInfo
 
+import pytest
+
 from irm_kmi_api import IrmKmiApiClientHa
 from irm_kmi_api import AnimationFrameData, RadarAnimationData, RadarStyle
 from irm_kmi_api import RainGraph
@@ -295,6 +297,76 @@ def test_get_animation_data():
 
     for element in data['sequence']:
         assert 'rs=4' in element['image']
+
+
+@pytest.mark.parametrize("animation", [[], "none", None, 42])
+def test_get_animation_data_when_animation_is_not_a_dict(animation):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    api._api_data['animation'] = animation
+
+    with pytest.raises(ValueError):
+        api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+
+@pytest.mark.parametrize("uri", [None, 42])
+def test_get_animation_data_skips_frame_without_valid_uri(uri):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    sequence = api._api_data['animation']['sequence']
+    sequence[0]['uri'] = uri
+
+    data = api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+    assert len(data['sequence']) == len(sequence) - 1
+    assert data['sequence'][0]['image'].startswith(sequence[1]['uri'])
+
+
+@pytest.mark.parametrize("frame_time", [None, 'x'])
+def test_get_animation_data_skips_frame_without_valid_time(frame_time):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    sequence = api._api_data['animation']['sequence']
+    sequence[0]['time'] = frame_time
+
+    data = api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+    assert len(data['sequence']) == len(sequence) - 1
+    assert data['sequence'][0]['image'].startswith(sequence[1]['uri'])
+
+
+@pytest.mark.parametrize("position", [None, 'x'])
+def test_get_animation_data_with_invalid_position(position):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    api._api_data['animation']['sequence'][3]['position'] = position
+
+    data = api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+    assert data['sequence'][3]['position'] == 0
+
+
+@pytest.mark.parametrize("localisation_layer", [None, 42])
+def test_get_animation_data_with_invalid_localisation_layer(localisation_layer):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    api._api_data['animation']['localisationLayer'] = localisation_layer
+
+    with pytest.raises(ValueError):
+        api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+
+@pytest.mark.parametrize("value", [None, 'x', []])
+def test_get_animation_data_with_invalid_hint_and_unit(value):
+    api = IrmKmiApiClientHa(session=MagicMock(), user_agent='testing', cdt_map={})
+    api._api_data = json.loads(load_fixture("forecast.json"))
+    api._api_data['animation']['sequenceHint'] = value
+    api._api_data['animation']['unit'] = value
+
+    data = api.get_animation_data(ZoneInfo('Europe/Brussels'), 'en', RadarStyle.OPTION_STYLE_STD, False)
+
+    assert data['hint'] is None
+    assert data['unit'] is None
 
 
 async def test_download_single_cloud():

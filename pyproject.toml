@@ -27,6 +27,9 @@ Homepage = "https://github.com/jdejaegh/irm-kmi-api"
 [tool.setuptools]
 packages = ["irm_kmi_api", "irm_kmi_api.resources"]
 
+[tool.setuptools.package-data]
+irm_kmi_api = ["py.typed"]
+
 [tool.bumpver]
 current_version = "1.1.1"
 version_pattern = "MAJOR.MINOR.PATCH"

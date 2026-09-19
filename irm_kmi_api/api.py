@@ -42,6 +42,9 @@ def _float_or_none(v: Any) -> float | None:
     except (TypeError, ValueError):
         return None
 
+def _number_or_zero(v: Any) -> float:
+    return v if isinstance(v, (int, float)) else 0
+
 class IrmKmiApiError(Exception):
     """Exception to indicate a general API error."""
 
@@ -512,16 +515,18 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         :param dark_mode: true if dark mode
         :return: animation data that can be used to download the images and build the rain graph animation
         """
-        animation_data = self._api_data.get("animation", {}).get("sequence")
-        localisation_layer_url = self._api_data.get("animation", {}).get(
-            "localisationLayer"
-        )
+        animation = self._api_data.get("animation", {})
+
+        if not isinstance(animation, dict):
+            raise ValueError("Cannot create animation data")
+
+        animation_data = animation.get("sequence")
+        localisation_layer_url = animation.get("localisationLayer")
         country = self.get_country()
 
         if (
-                animation_data is None
-                or localisation_layer_url is None
-                or not isinstance(animation_data, list)
+                not isinstance(animation_data, list)
+                or not isinstance(localisation_layer_url, str)
         ):
             raise ValueError("Cannot create animation data")
 
@@ -529,17 +534,12 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
             localisation_layer_url,
             {"th": "d" if country == "NL" or not dark_mode else "n"},
         )
-        images_from_api = [
-            self._merge_url_and_params(
-                frame.get("uri"), {"rs": STYLE_TO_PARAM_MAP[style]}
-            )
-            for frame in animation_data
-            if frame is not None and frame.get("uri") is not None
-        ]
+        hint = animation.get("sequenceHint")
+        unit = animation.get("unit")
 
         radar_animation = RadarAnimationData(
-            hint=self._api_data.get("animation", {}).get("sequenceHint", {}).get(lang),
-            unit=self._api_data.get("animation", {}).get("unit", {}).get(lang),
+            hint=hint.get(lang) if isinstance(hint, dict) else None,
+            unit=unit.get(lang) if isinstance(unit, dict) else None,
             location=localisation,
         )
 
@@ -548,21 +548,28 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         current_time = datetime.now(tz)
         most_recent_frame = None
 
-        for idx, item in enumerate(animation_data):
-            frame = AnimationFrameData(
-                image=images_from_api[idx],
-                time=datetime.fromisoformat(item.get("time"))
-                if item.get("time", None) is not None
-                else None,
-                value=item.get("value", 0),
-                position=item.get("position", 0),
-                position_lower=item.get("positionLower", 0),
-                position_higher=item.get("positionHigher", 0),
-            )
-            sequence.append(frame)
+        for item in animation_data:
+            if not isinstance(item, dict) or not isinstance(item.get("uri"), str):
+                continue
+            try:
+                frame_time = datetime.fromisoformat(item.get("time"))
+            except (TypeError, ValueError):
+                continue
 
-            if most_recent_frame is None and current_time < frame["time"]:
-                most_recent_frame = idx - 1 if idx > 0 else idx
+            frame = AnimationFrameData(
+                image=self._merge_url_and_params(
+                    item["uri"], {"rs": STYLE_TO_PARAM_MAP[style]}
+                ),
+                time=frame_time,
+                value=_number_or_zero(item.get("value")),
+                position=_number_or_zero(item.get("position")),
+                position_lower=_number_or_zero(item.get("positionLower")),
+                position_higher=_number_or_zero(item.get("positionHigher")),
+            )
+            if most_recent_frame is None and current_time < frame_time:
+                most_recent_frame = max(len(sequence) - 1, 0)
+
+            sequence.append(frame)
 
         radar_animation["sequence"] = sequence
         radar_animation["most_recent_image_idx"] = most_recent_frame
@@ -576,12 +583,9 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
         :param lang: langage to get data for (must be 'fr', 'nl', 'de' or 'en')
         :return: unordered list of warnings
         """
-        warning_data = self._api_data.get("for", {}).get("warning")
-        if (
-                warning_data is None
-                or not isinstance(warning_data, list)
-                or len(warning_data) == 0
-        ):
+        forecast = self._api_data.get("for")
+        warning_data = forecast.get("warning") if isinstance(forecast, dict) else None
+        if not isinstance(warning_data, list) or len(warning_data) == 0:
             return []
 
         result = list()
@@ -590,24 +594,25 @@ class IrmKmiApiClientHa(IrmKmiApiClient):
                 warning_id = int(data.get("warningType", {}).get("id"))
                 start = datetime.fromisoformat(data.get("fromTimestamp", None))
                 end = datetime.fromisoformat(data.get("toTimestamp", None))
-            except (TypeError, ValueError):
+            except (AttributeError, TypeError, ValueError):
                 # Without this data, the warning is useless
                 continue
 
             try:
                 level = int(data.get("warningLevel"))
-            except TypeError:
+            except (TypeError, ValueError):
                 level = None
+
+            name = data["warningType"].get("name")
+            text = data.get("text")
 
             result.append(
                 WarningData(
                     slug=SLUG_MAP.get(warning_id, WarningType.UNKNOWN),
                     id=warning_id,
                     level=level,
-                    friendly_name=data.get("warningType", {})
-                    .get("name", {})
-                    .get(lang, ""),
-                    text=data.get("text", {}).get(lang, ""),
+                    friendly_name=name.get(lang, "") if isinstance(name, dict) else "",
+                    text=text.get(lang, "") if isinstance(text, dict) else "",
                     starts_at=start,
                     ends_at=end,
                 )
