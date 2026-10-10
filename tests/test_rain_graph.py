@@ -8,9 +8,13 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from irm_kmi_api import IrmKmiApiClientHa
-from irm_kmi_api import AnimationFrameData, RadarAnimationData, RadarStyle
-from irm_kmi_api import RainGraph
+from irm_kmi_api import (
+    AnimationFrameData,
+    IrmKmiApiClientHa,
+    RadarAnimationData,
+    RadarStyle,
+    RainGraph,
+)
 from tests.conftest import load_fixture
 
 
