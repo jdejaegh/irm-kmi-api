@@ -10,7 +10,7 @@ from svgwrite import Drawing
 from svgwrite.animate import Animate
 from svgwrite.container import FONT_TEMPLATE
 
-from .api import IrmKmiApiClient, IrmKmiApiError
+from .api import IrmKmiApiClient, IrmKmiApiCommunicationError, IrmKmiApiError
 from .data import AnimationFrameData, RadarAnimationData, RadarStyle
 from .resources import be_black, be_satellite, be_white, nl, roboto
 
@@ -74,6 +74,9 @@ class RainGraph:
         self._dwg_save: Drawing | None = None
         self._dwg_animated: Drawing | None = None
         self._dwg_still: Drawing | None = None
+        self._animated_complete: bool = False
+        self._still_complete: bool = False
+        self._complete: bool = False
 
     async def build(self) -> Self:
         """Build the rain graph by calling all the method in the right order.  Returns self when done"""
@@ -91,8 +94,11 @@ class RainGraph:
         """
         Get the animated SVG. If called for the first time, downloads the cloud images to build the file.
 
+        If the cloud images cannot be downloaded, the SVG is returned without them and is_complete() returns False.
+
         :return: utf-8 encoded animated SVG string
         :raises: ValueError if build() was not called before
+        :raises: IrmKmiApiError if the location layer cannot be downloaded
         """
 
         if self._dwg_save is None:
@@ -107,18 +113,23 @@ class RainGraph:
             try:
                 await clouds
                 self._insert_cloud_layer()
+                self._animated_complete = len(self._animation_data['sequence']) > 0
             except IrmKmiApiError as err:
                 _LOGGER.warning(f"Could not download clouds from API: {err}")
             await self._draw_location()
             self._dwg_animated = self._dwg
+        self._complete = self._animated_complete
         return self._get_svg_string(still_image=False)
 
     async def get_still(self) -> bytes:
         """
         Get the still SVG. If called for the first time, downloads the cloud images to build the file.
 
+        If the cloud image cannot be downloaded, the SVG is returned without it and is_complete() returns False.
+
         :return: utf-8 encoded SVG string
         :raises: ValueError if build() was not called before
+        :raises: IrmKmiApiError if the location layer cannot be downloaded
         """
 
         if self._dwg_save is None:
@@ -135,11 +146,22 @@ class RainGraph:
             try:
                 await cloud
                 self._insert_cloud_layer(idx)
+                self._still_complete = len(self._animation_data['sequence']) > 0
             except IrmKmiApiError as err:
                 _LOGGER.warning(f"Could not download clouds from API: {err}")
             await self._draw_location()
             self._dwg_still = self._dwg
+        self._complete = self._still_complete
         return self._get_svg_string(still_image=True)
+
+    def is_complete(self) -> bool:
+        """
+        Tell if the SVG returned by the last call to get_animated() or get_still() contains the cloud images.
+
+        :return: False if the cloud images could not be downloaded, if there are no frames,
+            or if no SVG was returned yet
+        """
+        return self._complete
 
     def get_hint(self) -> str:
         """
@@ -184,8 +206,13 @@ class RainGraph:
 
         for url in urls:
             coroutines.append(self._api_client.get_image(url))
-        async with asyncio.timeout(60):
-            images_from_api = await asyncio.gather(*coroutines)
+        try:
+            async with asyncio.timeout(60):
+                images_from_api = await asyncio.gather(*coroutines)
+        except asyncio.TimeoutError as exception:
+            raise IrmKmiApiCommunicationError(
+                "Timeout error fetching information"
+            ) from exception
 
         _LOGGER.info(f"Just downloaded {len(images_from_api)} images")
         return images_from_api
@@ -225,7 +252,7 @@ class RainGraph:
             self._write_time_and_rain(paragraph, rain_level, time)
             return
 
-        for i in range(self._frame_count):
+        for i in range(len(times)):
             time = times[i]
             rain_level = rain_levels[i]
 
@@ -293,7 +320,7 @@ class RainGraph:
                         1.0 - position_lower) * self._graph_height))
                 graph_rect_right -= self._interval_width
 
-        if list_higher_points and list_lower_points:
+        if len(list_higher_points) > 1 and list_lower_points:
             self._draw_chance_precip(list_higher_points, list_lower_points)
 
     def _draw_data_line(self):
@@ -310,6 +337,10 @@ class RainGraph:
                 (graph_rect_left,
                  graph_rect_top + (1.0 - position) * self._graph_height))
             graph_rect_left += self._interval_width
+
+        if len(entry_list) < 2:
+            return
+
         data_line_path = self._dwg.path(fill='none', stroke='#63c8fa', stroke_width=2)
         self._set_curved_path(data_line_path, entry_list)
         self._dwg.add(data_line_path)

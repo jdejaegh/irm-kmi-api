@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import datetime
 import json
@@ -11,6 +12,7 @@ import pytest
 from irm_kmi_api import (
     AnimationFrameData,
     IrmKmiApiClientHa,
+    IrmKmiApiCommunicationError,
     RadarAnimationData,
     RadarStyle,
     RainGraph,
@@ -422,3 +424,173 @@ def test_can_build_rain_graph_with_empty_sequence():
         'BE', RadarStyle.OPTION_STYLE_STD
     )
 
+
+def get_rain_graph_with_cloud_urls(get_image) -> RainGraph:
+    data = get_radar_animation_data()
+    for i, item in enumerate(data['sequence']):
+        item['image'] = f'image-url-{i}'
+
+    api_client = MagicMock()
+    api_client.get_image = AsyncMock(side_effect=get_image)
+
+    return RainGraph(
+        animation_data=data,
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+        api_client=api_client,
+    )
+
+
+async def test_is_complete_when_all_frames_are_drawn():
+    rain_graph = RainGraph(
+        animation_data=get_radar_animation_data(),
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+    )
+
+    assert not rain_graph.is_complete()
+
+    await rain_graph.build()
+    await rain_graph.get_animated()
+
+    assert rain_graph.is_complete()
+
+
+async def test_is_not_complete_when_cloud_download_fails(caplog):
+    async def get_image(url):
+        raise IrmKmiApiCommunicationError("Error fetching information")
+
+    rain_graph = get_rain_graph_with_cloud_urls(get_image)
+
+    await rain_graph.build()
+    svg = await rain_graph.get_animated()
+
+    assert svg.startswith(b'<svg')
+    assert not rain_graph.is_complete()
+    assert "Could not download clouds from API" in caplog.text
+
+
+async def test_is_complete_matches_the_last_returned_svg():
+    fail = True
+
+    async def get_image(url):
+        if fail:
+            raise IrmKmiApiCommunicationError("Error fetching information")
+        return load_fixture("clouds_be.png")
+
+    rain_graph = get_rain_graph_with_cloud_urls(get_image)
+    await rain_graph.build()
+
+    await rain_graph.get_animated()
+    assert not rain_graph.is_complete()
+
+    fail = False
+    await rain_graph.get_still()
+    assert rain_graph.is_complete()
+
+    await rain_graph.get_animated()
+    assert not rain_graph.is_complete()
+
+
+async def test_cloud_download_timeout_raises_api_error(monkeypatch):
+    real_timeout = asyncio.timeout
+    monkeypatch.setattr(asyncio, 'timeout', lambda delay: real_timeout(0.01))
+
+    async def get_image(url):
+        await asyncio.sleep(1)
+
+    rain_graph = get_rain_graph_with_cloud_urls(get_image)
+
+    with pytest.raises(IrmKmiApiCommunicationError):
+        await rain_graph._download_images_from_api(['image-url-0'])
+
+
+async def test_get_animated_when_cloud_download_times_out(monkeypatch, caplog):
+    real_timeout = asyncio.timeout
+    monkeypatch.setattr(asyncio, 'timeout', lambda delay: real_timeout(0.01))
+
+    async def get_image(url):
+        await asyncio.sleep(1)
+
+    rain_graph = get_rain_graph_with_cloud_urls(get_image)
+
+    await rain_graph.build()
+    svg = await rain_graph.get_animated()
+
+    assert svg.startswith(b'<svg')
+    assert not rain_graph.is_complete()
+    assert "Could not download clouds from API" in caplog.text
+
+
+def get_empty_animation_data() -> RadarAnimationData:
+    data = get_radar_animation_data()
+    data['sequence'] = []
+    data['most_recent_image_idx'] = None
+    return data
+
+
+async def test_get_animated_with_empty_sequence():
+    rain_graph = RainGraph(
+        animation_data=get_empty_animation_data(),
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+    )
+
+    await rain_graph.build()
+    svg = (await rain_graph.get_animated()).decode()
+
+    with open("tests/fixtures/loc_layer_be_n.png", "rb") as file:
+        location_b64 = base64.b64encode(file.read()).decode('utf-8')
+
+    assert location_b64 in svg
+    assert "Testing SVG camera" in svg
+    assert not rain_graph.is_complete()
+
+
+async def test_get_still_with_empty_sequence():
+    rain_graph = RainGraph(
+        animation_data=get_empty_animation_data(),
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+    )
+
+    await rain_graph.build()
+    svg = (await rain_graph.get_still()).decode()
+
+    assert "Testing SVG camera" in svg
+    assert not rain_graph.is_complete()
+
+
+def get_one_frame_animation_data() -> RadarAnimationData:
+    data = get_radar_animation_data()
+    data['sequence'] = data['sequence'][:1]
+    data['most_recent_image_idx'] = 0
+    return data
+
+
+async def test_get_animated_with_one_frame():
+    rain_graph = RainGraph(
+        animation_data=get_one_frame_animation_data(),
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+    )
+
+    await rain_graph.build()
+    svg = (await rain_graph.get_animated()).decode()
+
+    assert "Testing SVG camera" in svg
+    assert rain_graph.is_complete()
+
+
+async def test_get_still_with_one_frame():
+    rain_graph = RainGraph(
+        animation_data=get_one_frame_animation_data(),
+        country='BE',
+        style=RadarStyle.OPTION_STYLE_STD,
+    )
+
+    await rain_graph.build()
+    svg = (await rain_graph.get_still()).decode()
+
+    assert "Testing SVG camera" in svg
+    assert rain_graph.is_complete()
